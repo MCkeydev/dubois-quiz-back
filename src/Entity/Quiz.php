@@ -6,6 +6,8 @@ use App\Repository\QuizRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\NotNull;
 
 #[ORM\Entity(repositoryClass: QuizRepository::class)]
 class Quiz
@@ -16,7 +18,9 @@ class Quiz
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $name = null;
+    #[NotBlank]
+    #[NotNull]
+    private ?string $title = null;
 
     #[ORM\OneToMany(mappedBy: 'quiz', targetEntity: Evaluation::class)]
     private Collection $evaluations;
@@ -39,14 +43,14 @@ class Quiz
         return $this->id;
     }
 
-    public function getName(): ?string
+    public function getTitle(): ?string
     {
-        return $this->name;
+        return $this->title;
     }
 
-    public function setName(string $name): self
+    public function setTitle(string $title): self
     {
-        $this->name = $name;
+        $this->title = $title;
 
         return $this;
     }
