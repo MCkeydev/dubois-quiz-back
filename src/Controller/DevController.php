@@ -21,7 +21,7 @@ class DevController extends AbstractController
 
         $user = new User();
         $user->setName('dev')
-            ->setEmail('dev@dev.fr')
+            ->setEmail('dev2@dev.fr')
             ->setSurname('dev')
             ->setFormation($formation);
 

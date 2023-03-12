@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Interfaces\OwnedEntityInterface;
 use App\Repository\QuestionRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -9,7 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: QuestionRepository::class)]
-class Question
+class Question implements OwnedEntityInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -33,7 +34,8 @@ class Question
     #[ORM\JoinColumn(nullable: false)]
     private ?Quiz $Quiz = null;
 
-    #[ORM\OneToMany(mappedBy: 'Question', targetEntity: Answer::class, orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'Question', targetEntity: Answer::class, cascade: ['persist'], orphanRemoval: true)]
+    #[Groups('api')]
     private Collection $answers;
 
     #[ORM\OneToMany(mappedBy: 'question', targetEntity: StudentAnswer::class, orphanRemoval: true)]
@@ -43,6 +45,11 @@ class Question
     {
         $this->answers = new ArrayCollection();
         $this->studentAnswers = new ArrayCollection();
+    }
+
+    public function isOwner(User $user): bool
+    {
+        return $this->getQuiz()->getAuthor() === $user;
     }
 
     public function getId(): ?int

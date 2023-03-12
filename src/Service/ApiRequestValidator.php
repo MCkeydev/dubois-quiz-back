@@ -3,11 +3,16 @@
 namespace App\Service;
 
 use App\Entity\Quiz;
+use Doctrine\Migrations\Configuration\Migration\Exception\JsonNotValid;
+use Doctrine\ORM\Mapping\Entity;
 use Lcobucci\JWT\Validator;
+use Symfony\Component\HttpFoundation\Exception\JsonException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Serializer\Exception\PartialDenormalizationException;
+use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Constraints\Json;
@@ -42,7 +47,7 @@ class ApiRequestValidator
                  * for debugging.
                  */
 
-                return $errors;
+                throw new JsonException($errors);
             }
 
             return $dto;
@@ -59,7 +64,7 @@ class ApiRequestValidator
                 $violations->add(new ConstraintViolation($message, '', $parameters, null, $exception->getPath(), null));
             };
 
-            return $violations;
+            throw new JsonException($violations);
         }
     }
 }

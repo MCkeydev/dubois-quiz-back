@@ -2,13 +2,14 @@
 
 namespace App\Entity;
 
+use App\Interfaces\OwnedEntityInterface;
 use App\Repository\EvaluationRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: EvaluationRepository::class)]
-class Evaluation
+class Evaluation implements OwnedEntityInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -41,6 +42,11 @@ class Evaluation
     public function __construct()
     {
         $this->Formations = new ArrayCollection();
+    }
+
+    public function isOwner(User $user): bool
+    {
+        return $this->getAuthor() === $user;
     }
 
     public function getId(): ?int

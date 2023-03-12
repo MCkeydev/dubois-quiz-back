@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Interfaces\OwnedEntityInterface;
 use App\Repository\QuizRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -10,7 +11,7 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\NotNull;
 
 #[ORM\Entity(repositoryClass: QuizRepository::class)]
-class Quiz
+class Quiz implements OwnedEntityInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -36,6 +37,11 @@ class Quiz
     {
         $this->evaluations = new ArrayCollection();
         $this->questions = new ArrayCollection();
+    }
+
+    public function isOwner(User $user): bool
+    {
+        return $this->getAuthor() === $user;
     }
 
     public function getId(): ?int

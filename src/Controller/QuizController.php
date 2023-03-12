@@ -13,11 +13,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
-use Symfony\Component\Serializer\Exception\PartialDenormalizationException;
-use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
-use Symfony\Component\Serializer\SerializerInterface;
-use Symfony\Component\Validator\Constraints\Json;
-use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\ConstraintViolationList;
 
 class QuizController extends AbstractController
@@ -43,6 +38,16 @@ class QuizController extends AbstractController
         return new JsonResponse(['message' => 'Quiz was succesfully created.', 'id' => $dto->getId()], Response::HTTP_CREATED);
     }
 
+    /**
+     * This route is meant to create a Route and
+     *
+     * @param Quiz $quiz
+     * @param User $user
+     * @param Request $request
+     * @param ApiRequestValidator $apiRequestValidator
+     * @param EntityManagerInterface $entityManager
+     * @return JsonResponse
+     */
     #[Route('/api/quiz/{id}/question', name: 'app_quiz_createquestion', methods: ['POST'])]
     public function createQuestion(
                                     Quiz $quiz,
@@ -53,11 +58,16 @@ class QuizController extends AbstractController
     )
     {
         $dto = $apiRequestValidator->checkRequest($request, Question::class);
+
+        if ($dto instanceof ConstraintViolationList) {
+            return $this->json($dto, Response::HTTP_BAD_REQUEST);
+        }
+
         $entityManager->persist($dto);
 
         $quiz->addQuestion($dto);
         $entityManager->flush();
 
-        return $this->json($dto, context: [ 'groups' => 'api']);
+        return $this->json($dto, context: [ 'groups' => 'api' ]);
     }
 }

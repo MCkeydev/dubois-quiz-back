@@ -4,15 +4,23 @@ namespace App\Entity;
 
 use App\Repository\AnswerRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\NotNull;
+
 
 #[ORM\Entity(repositoryClass: AnswerRepository::class)]
 class Answer
 {
+    #[Groups('api')]
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
+    #[Groups('api')]
+    #[NotNull]
+    #[NotBlank]
     #[ORM\Column(length: 255)]
     private ?string $title = null;
 

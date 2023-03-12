@@ -4,7 +4,6 @@ namespace App\DTO;
 
 class QuestionDTO
 {
-
     private ?bool $isQcm = null;
 
     private ?string $title = null;
