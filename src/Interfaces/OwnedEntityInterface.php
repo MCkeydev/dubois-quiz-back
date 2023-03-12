@@ -4,7 +4,7 @@ namespace App\Interfaces;
 
 use App\Entity\User;
 
-interface OwnedEntityInterface
+interface OwnedEntityInterface extends EntityInterface
 {
     public function isOwner(User $user): bool;
 }

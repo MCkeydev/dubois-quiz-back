@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Interfaces\EntityInterface;
 use App\Repository\AnswerRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -10,7 +11,7 @@ use Symfony\Component\Validator\Constraints\NotNull;
 
 
 #[ORM\Entity(repositoryClass: AnswerRepository::class)]
-class Answer
+class Answer implements EntityInterface
 {
     #[Groups('api')]
     #[ORM\Id]

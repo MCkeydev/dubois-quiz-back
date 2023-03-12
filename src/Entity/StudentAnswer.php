@@ -2,11 +2,12 @@
 
 namespace App\Entity;
 
+use App\Interfaces\EntityInterface;
 use App\Repository\StudentAnswerRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: StudentAnswerRepository::class)]
-class StudentAnswer
+class StudentAnswer implements EntityInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]

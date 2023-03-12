@@ -25,7 +25,7 @@ class QuizController extends AbstractController
                                 EntityManagerInterface $entityManager,
                               ): JsonResponse
     {
-        $dto = $apiRequestValidator->checkRequest($request, Quiz::class);
+        $dto = $apiRequestValidator->checkRequestValidity($request, Quiz::class);
 
         if ($dto instanceof ConstraintViolationList) {
             return $this->json($dto, Response::HTTP_BAD_REQUEST);
@@ -57,7 +57,7 @@ class QuizController extends AbstractController
                                     EntityManagerInterface $entityManager,
     )
     {
-        $dto = $apiRequestValidator->checkRequest($request, Question::class);
+        $dto = $apiRequestValidator->checkRequestValidity($request, Question::class);
 
         if ($dto instanceof ConstraintViolationList) {
             return $this->json($dto, Response::HTTP_BAD_REQUEST);

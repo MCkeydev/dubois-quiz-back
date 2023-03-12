@@ -2,13 +2,14 @@
 
 namespace App\Entity;
 
+use App\Interfaces\EntityInterface;
 use App\Repository\StudentCopyRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: StudentCopyRepository::class)]
-class StudentCopy
+class StudentCopy implements EntityInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
