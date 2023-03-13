@@ -16,13 +16,12 @@ class DevController extends AbstractController
     public function index(UserPasswordHasherInterface $hasher, EntityManagerInterface $entityManager): Response
     {
         $formation = new Formation();
-        $formation->setName('test')
-            ->setCreatedAt(new \DateTimeImmutable());
+        $formation->setName('BTS SIO SLAM 2ème année');
 
         $user = new User();
-        $user->setName('dev')
-            ->setEmail('dev2@dev.fr')
-            ->setSurname('dev')
+        $user->setName('michele')
+            ->setEmail('michele.florio@ufa47.org.fr')
+            ->setSurname('Florio')
             ->setFormation($formation);
 
         $user->setPassword($hasher->hashPassword($user, 'password'));

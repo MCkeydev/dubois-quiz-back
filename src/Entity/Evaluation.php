@@ -62,8 +62,6 @@ class Evaluation implements OwnedEntityInterface
     #[Groups(['getEvaluation'])]
     private Collection $studentCopies;
 
-
-
     #[ORM\ManyToOne(inversedBy: 'evaluations')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $author = null;
@@ -132,9 +130,9 @@ class Evaluation implements OwnedEntityInterface
     public function setEndsAt($endsAt): self
     {
         if ($endsAt instanceof \DateTimeImmutable) {
-            $this->startsAt = $endsAt;
+            $this->endsAt = $endsAt;
         } else if (is_string($endsAt)) {
-            $this->startsAt = new \DateTimeImmutable($endsAt);
+            $this->endsAt = new \DateTimeImmutable($endsAt);
         }
 
         return $this;
