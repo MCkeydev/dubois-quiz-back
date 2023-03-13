@@ -37,7 +37,6 @@ abstract class AbstractApiController extends AbstractController
             if ($this->propertyAccessor->isReadable($object, $key)) {
 
                 $property = $this->propertyAccessor->getValue($object, $key);
-
                 if ($property instanceof Collection) {
                     foreach ($property->toArray() as $item => $itemValue) {
                         $this->deepSetProperties($value[$item], $itemValue);
@@ -45,6 +44,8 @@ abstract class AbstractApiController extends AbstractController
                 } else {
                     $this->propertyAccessor->setValue($object, $key, $value);
                 }
+
+                return $object;
             }
         }
     }

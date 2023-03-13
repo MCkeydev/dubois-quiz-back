@@ -7,6 +7,13 @@ use App\Repository\EvaluationRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints\Callback;
+use Symfony\Component\Validator\Constraints\DateTime;
+use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\NotNull;
+use Symfony\Component\Validator\Constraints\Type;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: EvaluationRepository::class)]
 class Evaluation implements OwnedEntityInterface
@@ -14,34 +21,67 @@ class Evaluation implements OwnedEntityInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['getEvaluation'])]
     private ?int $id = null;
 
     #[ORM\Column]
+    #[Groups(['getEvaluation'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
+    #[Type('DateTimeImmutable')]
+    #[NotBlank]
+    #[NotNull]
+    #[Groups(['getEvaluation'])]
     private ?\DateTimeImmutable $startsAt = null;
 
     #[ORM\Column]
+    #[Type('DateTimeImmutable')]
+    #[NotBlank]
+    #[NotNull]
+    #[Groups(['getEvaluation'])]
     private ?\DateTimeImmutable $endsAt = null;
 
     #[ORM\Column]
+    #[Groups(['getEvaluation'])]
     private ?bool $isLocked = null;
+
+    #[ORM\Column]
+    private ?\DateTimeImmutable $updatedAt = null;
+
+    #[ORM\ManyToOne(inversedBy: 'evaluations')]
+    #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['getEvaluation'])]
+    private ?Quiz $quiz = null;
+
+
+    #[ORM\ManyToMany(targetEntity: Formation::class, inversedBy: 'evaluations')]
+    private Collection $Formations;
+
+    #[ORM\OneToMany(mappedBy: 'evaluation', targetEntity: StudentCopy::class)]
+    #[Groups(['getEvaluation'])]
+    private Collection $studentCopies;
 
     #[ORM\ManyToOne(inversedBy: 'evaluations')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $author = null;
 
-    #[ORM\ManyToOne(inversedBy: 'evaluations')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?Quiz $quiz = null;
-
-    #[ORM\ManyToMany(targetEntity: Formation::class, inversedBy: 'evaluations')]
-    private Collection $Formations;
+    #[Callback]
+    public function validateDateTime(ExecutionContextInterface $context) {
+        if ($this->getStartsAt() > $this->getEndsAt()) {
+            $context->buildViolation('The start date must be anterior to the ends date.')
+                ->atPath('startsAt')
+                ->addViolation();
+        }
+    }
 
     public function __construct()
     {
+        $this->isLocked = false;
+        $this->createdAt = new \DateTimeImmutable();
+        $this->updatedAt = new \DateTimeImmutable();
         $this->Formations = new ArrayCollection();
+        $this->studentCopies = new ArrayCollection();
     }
 
     public function isOwner(User $user): bool
@@ -71,9 +111,13 @@ class Evaluation implements OwnedEntityInterface
         return $this->startsAt;
     }
 
-    public function setStartsAt(\DateTimeImmutable $startsAt): self
+    public function setStartsAt($startsAt): self
     {
-        $this->startsAt = $startsAt;
+        if ($startsAt instanceof \DateTimeImmutable) {
+            $this->startsAt = $startsAt;
+        } else if (is_string($startsAt)) {
+            $this->startsAt = new \DateTimeImmutable($startsAt);
+        }
 
         return $this;
     }
@@ -83,9 +127,13 @@ class Evaluation implements OwnedEntityInterface
         return $this->endsAt;
     }
 
-    public function setEndsAt(\DateTimeImmutable $endsAt): self
+    public function setEndsAt($endsAt): self
     {
-        $this->endsAt = $endsAt;
+        if ($endsAt instanceof \DateTimeImmutable) {
+            $this->endsAt = $endsAt;
+        } else if (is_string($endsAt)) {
+            $this->endsAt = new \DateTimeImmutable($endsAt);
+        }
 
         return $this;
     }
@@ -98,18 +146,6 @@ class Evaluation implements OwnedEntityInterface
     public function setIsLocked(bool $isLocked): self
     {
         $this->isLocked = $isLocked;
-
-        return $this;
-    }
-
-    public function getAuthor(): ?User
-    {
-        return $this->author;
-    }
-
-    public function setAuthor(?User $author): self
-    {
-        $this->author = $author;
 
         return $this;
     }
@@ -149,4 +185,59 @@ class Evaluation implements OwnedEntityInterface
 
         return $this;
     }
+
+    /**
+     * @return Collection<int, StudentCopy>
+     */
+    public function getStudentCopies(): Collection
+    {
+        return $this->studentCopies;
+    }
+
+    public function addStudentCopy(StudentCopy $studentCopy): self
+    {
+        if (!$this->studentCopies->contains($studentCopy)) {
+            $this->studentCopies->add($studentCopy);
+            $studentCopy->setEvaluation($this);
+        }
+
+        return $this;
+    }
+
+    public function removeStudentCopy(StudentCopy $studentCopy): self
+    {
+        if ($this->studentCopies->removeElement($studentCopy)) {
+            // set the owning side to null (unless already changed)
+            if ($studentCopy->getEvaluation() === $this) {
+                $studentCopy->setEvaluation(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(\DateTimeImmutable $updatedAt): self
+    {
+        $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
+
+    public function getAuthor(): ?User
+    {
+        return $this->author;
+    }
+
+    public function setAuthor(?User $author): self
+    {
+        $this->author = $author;
+
+        return $this;
+    }
+
 }

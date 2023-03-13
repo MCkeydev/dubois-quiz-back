@@ -37,7 +37,6 @@ class QuestionController extends AbstractApiController
     )
     {
         // TODO: Make this route owner safe
-
         $dto = $apiRequestValidator->checkRequestValidity($request, Question::class);
 
         if ($dto instanceof ConstraintViolationList) {

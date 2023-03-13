@@ -9,6 +9,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 class User implements UserInterface, PasswordAuthenticatedUserInterface, EntityInterface
@@ -16,9 +17,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, EntityI
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['getEvaluation', 'fetchStudentCopy'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 180, unique: true)]
+    #[Groups(['getEvaluation', 'fetchStudentCopy'])]
     private ?string $email = null;
 
     #[ORM\Column]
@@ -49,10 +52,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, EntityI
     #[ORM\OneToMany(mappedBy: 'author', targetEntity: Quiz::class)]
     private Collection $quizzes;
 
+    #[ORM\OneToMany(mappedBy: 'author', targetEntity: Evaluation::class)]
+    private Collection $evaluations;
+
     public function __construct()
     {
         $this->studentCopies = new ArrayCollection();
         $this->quizzes = new ArrayCollection();
+        $this->evaluations = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -245,6 +252,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, EntityI
             // set the owning side to null (unless already changed)
             if ($quiz->getAuthor() === $this) {
                 $quiz->setAuthor(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Evaluation>
+     */
+    public function getEvaluations(): Collection
+    {
+        return $this->evaluations;
+    }
+
+    public function addEvaluation(Evaluation $evaluation): self
+    {
+        if (!$this->evaluations->contains($evaluation)) {
+            $this->evaluations->add($evaluation);
+            $evaluation->setAuthor($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEvaluation(Evaluation $evaluation): self
+    {
+        if ($this->evaluations->removeElement($evaluation)) {
+            // set the owning side to null (unless already changed)
+            if ($evaluation->getAuthor() === $this) {
+                $evaluation->setAuthor(null);
             }
         }
 

@@ -7,8 +7,15 @@ use App\Repository\StudentCopyRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: StudentCopyRepository::class)]
+#[UniqueEntity(
+    fields: ['student', 'evaluation'],
+    errorPath: 'student',
+    message: 'Student can only participate to an evaluation once.',
+)]
 class StudentCopy implements EntityInterface
 {
     #[ORM\Id]
@@ -17,29 +24,37 @@ class StudentCopy implements EntityInterface
     private ?int $id = null;
 
     #[ORM\Column]
+    #[Groups('fetchStudentCopy')]
     private ?bool $canShare = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups('fetchStudentCopy')]
     private ?string $commentary = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups('fetchStudentCopy')]
     private ?int $averageScore = null;
 
-
-
     #[ORM\OneToMany(mappedBy: 'studentCopy', targetEntity: StudentAnswer::class, orphanRemoval: true)]
+    #[Groups('fetchStudentCopy')]
     private Collection $studentAnswers;
 
     #[ORM\ManyToOne(inversedBy: 'studentCopies')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups('fetchStudentCopy')]
     private ?User $student = null;
 
     #[ORM\ManyToOne(inversedBy: 'professorCopies')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $professor = null;
 
+    #[ORM\ManyToOne(inversedBy: 'studentCopies')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Evaluation $evaluation = null;
+
     public function __construct()
     {
+        $this->canShare = false;
         $this->studentAnswers = new ArrayCollection();
     }
 
@@ -134,6 +149,18 @@ class StudentCopy implements EntityInterface
     public function setProfessor(?User $professor): self
     {
         $this->professor = $professor;
+
+        return $this;
+    }
+
+    public function getEvaluation(): ?Evaluation
+    {
+        return $this->evaluation;
+    }
+
+    public function setEvaluation(?Evaluation $evaluation): self
+    {
+        $this->evaluation = $evaluation;
 
         return $this;
     }
