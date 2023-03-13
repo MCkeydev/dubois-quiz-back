@@ -7,6 +7,9 @@ use App\Repository\FormationRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\NotNull;
 
 #[ORM\Entity(repositoryClass: FormationRepository::class)]
 class Formation implements EntityInterface
@@ -14,23 +17,29 @@ class Formation implements EntityInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups('api')]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[NotNull]
+    #[NotBlank]
+    #[Groups('api')]
     private ?string $name = null;
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\ManyToMany(targetEntity: Evaluation::class, mappedBy: 'Formations')]
+    #[Groups('api')]
     private Collection $evaluations;
 
     #[ORM\OneToMany(mappedBy: 'Formation', targetEntity: User::class)]
+    #[Groups('api')]
     private Collection $users;
-
 
     public function __construct()
     {
+        $this->createdAt = new \DateTimeImmutable();
         $this->users = new ArrayCollection();
         $this->evaluations = new ArrayCollection();
     }
@@ -55,13 +64,6 @@ class Formation implements EntityInterface
     public function getCreatedAt(): ?\DateTimeImmutable
     {
         return $this->createdAt;
-    }
-
-    public function setCreatedAt(\DateTimeImmutable $createdAt): self
-    {
-        $this->createdAt = $createdAt;
-
-        return $this;
     }
 
     /**
