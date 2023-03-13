@@ -25,8 +25,6 @@ class StudentCopy implements EntityInterface
     #[ORM\Column(nullable: true)]
     private ?int $averageScore = null;
 
-
-
     #[ORM\OneToMany(mappedBy: 'studentCopy', targetEntity: StudentAnswer::class, orphanRemoval: true)]
     private Collection $studentAnswers;
 
@@ -37,6 +35,10 @@ class StudentCopy implements EntityInterface
     #[ORM\ManyToOne(inversedBy: 'professorCopies')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $professor = null;
+
+    #[ORM\ManyToOne(inversedBy: 'studentCopies')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Evaluation $evaluation = null;
 
     public function __construct()
     {
@@ -134,6 +136,18 @@ class StudentCopy implements EntityInterface
     public function setProfessor(?User $professor): self
     {
         $this->professor = $professor;
+
+        return $this;
+    }
+
+    public function getEvaluation(): ?Evaluation
+    {
+        return $this->evaluation;
+    }
+
+    public function setEvaluation(?Evaluation $evaluation): self
+    {
+        $this->evaluation = $evaluation;
 
         return $this;
     }

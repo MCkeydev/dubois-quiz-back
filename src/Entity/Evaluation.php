@@ -7,6 +7,12 @@ use App\Repository\EvaluationRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints\Callback;
+use Symfony\Component\Validator\Constraints\DateTime;
+use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\NotNull;
+use Symfony\Component\Validator\Constraints\Type;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: EvaluationRepository::class)]
 class Evaluation implements OwnedEntityInterface
@@ -20,9 +26,15 @@ class Evaluation implements OwnedEntityInterface
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
+    #[Type('DateTimeImmutable')]
+    #[NotBlank]
+    #[NotNull]
     private ?\DateTimeImmutable $startsAt = null;
 
     #[ORM\Column]
+    #[Type('DateTimeImmutable')]
+    #[NotBlank]
+    #[NotNull]
     private ?\DateTimeImmutable $endsAt = null;
 
     #[ORM\Column]
@@ -39,9 +51,24 @@ class Evaluation implements OwnedEntityInterface
     #[ORM\ManyToMany(targetEntity: Formation::class, inversedBy: 'evaluations')]
     private Collection $Formations;
 
+    #[ORM\OneToMany(mappedBy: 'evaluation', targetEntity: StudentCopy::class)]
+    private Collection $studentCopies;
+
+    #[Callback]
+    public function validateDateTime(ExecutionContextInterface $context, $payload) {
+        if ($this->getStartsAt() > $this->getEndsAt()) {
+            $context->buildViolation('The start date must be anterior to the ends date.')
+                ->atPath('startsAt')
+                ->addViolation();
+        }
+    }
+
     public function __construct()
     {
+        $this->isLocked = false;
+        $this->createdAt = new \DateTimeImmutable();
         $this->Formations = new ArrayCollection();
+        $this->studentCopies = new ArrayCollection();
     }
 
     public function isOwner(User $user): bool
@@ -149,4 +176,35 @@ class Evaluation implements OwnedEntityInterface
 
         return $this;
     }
+
+    /**
+     * @return Collection<int, StudentCopy>
+     */
+    public function getStudentCopies(): Collection
+    {
+        return $this->studentCopies;
+    }
+
+    public function addStudentCopy(StudentCopy $studentCopy): self
+    {
+        if (!$this->studentCopies->contains($studentCopy)) {
+            $this->studentCopies->add($studentCopy);
+            $studentCopy->setEvaluation($this);
+        }
+
+        return $this;
+    }
+
+    public function removeStudentCopy(StudentCopy $studentCopy): self
+    {
+        if ($this->studentCopies->removeElement($studentCopy)) {
+            // set the owning side to null (unless already changed)
+            if ($studentCopy->getEvaluation() === $this) {
+                $studentCopy->setEvaluation(null);
+            }
+        }
+
+        return $this;
+    }
+
 }
