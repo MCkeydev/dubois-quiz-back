@@ -7,6 +7,7 @@ use App\Repository\QuizRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\NotNull;
 
@@ -16,17 +17,20 @@ class Quiz implements OwnedEntityInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups('api')]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
     #[NotBlank]
     #[NotNull]
+    #[Groups('api')]
     private ?string $title = null;
 
     #[ORM\OneToMany(mappedBy: 'quiz', targetEntity: Evaluation::class)]
     private Collection $evaluations;
 
     #[ORM\OneToMany(mappedBy: 'Quiz', targetEntity: Question::class, orphanRemoval: true)]
+    #[Groups('api')]
     private Collection $questions;
 
     #[ORM\ManyToOne(inversedBy: 'quizzes')]
