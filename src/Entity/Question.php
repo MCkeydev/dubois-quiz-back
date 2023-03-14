@@ -15,19 +15,19 @@ class Question implements OwnedEntityInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups('api')]
+    #[Groups(['api', 'fetchAnswer'])]
     private ?int $id = null;
 
     #[ORM\Column]
-    #[Groups('api')]
+    #[Groups(['api', 'fetchAnswer'])]
     private ?bool $isQcm = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups('api')]
+    #[Groups(['api', 'fetchAnswer'])]
     private ?string $title = null;
 
     #[ORM\Column]
-    #[Groups('api')]
+    #[Groups(['api', 'fetchAnswer'])]
     private ?int $maxScore = null;
 
     #[ORM\ManyToOne(inversedBy: 'questions')]

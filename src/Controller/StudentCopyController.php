@@ -35,9 +35,12 @@ class StudentCopyController extends AbstractController
         ValidatorInterface $validator,
     ): Response
     {
+        // TODO: optimize this (no need to run validation twice)
+
         // Checks if this the user is a student.
         $this->denyAccessUnlessGranted('ROLE_ELEVE');
 
+        /** Checking user is allowed */
         // Fetches all the formations corresponding to the evaluation
         $formations = $evaluation->getFormations();
 
@@ -54,7 +57,13 @@ class StudentCopyController extends AbstractController
             };
         }
 
-        // TODO: optimize this (no need to run validation twice)
+        $dateNow =  new \DateTimeImmutable();
+
+        /** Checking the timeframe is not over */
+        if ($evaluation->getStartsAt() > $dateNow || $dateNow > $evaluation->getEndsAt()) {
+            throw new \JsonException('The evaluation can only be accessed within its time frame');
+        }
+
         /**
          * @var StudentCopy $studentCopy
          */

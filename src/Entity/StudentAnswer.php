@@ -5,19 +5,31 @@ namespace App\Entity;
 use App\Interfaces\EntityInterface;
 use App\Repository\StudentAnswerRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\NotNull;
 
 #[ORM\Entity(repositoryClass: StudentAnswerRepository::class)]
+#[UniqueEntity(
+    fields: ['studentCopy', 'question'],
+    errorPath: 'question',
+    message: 'Student can only answer a question once.',
+)]
 class StudentAnswer implements EntityInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups('fetchAnswer')]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups('fetchAnswer')]
     private ?string $annotation = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
+    #[Groups('fetchAnswer')]
     private ?int $score = null;
 
     #[ORM\ManyToOne(inversedBy: 'studentAnswers')]
@@ -26,7 +38,16 @@ class StudentAnswer implements EntityInterface
 
     #[ORM\ManyToOne(inversedBy: 'studentAnswers')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups('fetchAnswer')]
     private ?Question $question = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups('fetchAnswer')]
+    #[NotBlank(allowNull: true)]
+    private ?string $answer = null;
+
+    #[ORM\ManyToOne]
+    private ?Answer $choice = null;
 
     public function getId(): ?int
     {
@@ -77,6 +98,30 @@ class StudentAnswer implements EntityInterface
     public function setQuestion(?Question $question): self
     {
         $this->question = $question;
+
+        return $this;
+    }
+
+    public function getAnswer(): ?string
+    {
+        return $this->answer;
+    }
+
+    public function setAnswer(string $answer): self
+    {
+        $this->answer = $answer;
+
+        return $this;
+    }
+
+    public function getChoice(): ?Answer
+    {
+        return $this->choice;
+    }
+
+    public function setChoice(?Answer $choice): self
+    {
+        $this->choice = $choice;
 
         return $this;
     }

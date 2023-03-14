@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Interfaces\EntityInterface;
+use App\Interfaces\OwnedEntityInterface;
 use App\Repository\StudentCopyRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -16,7 +17,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
     errorPath: 'student',
     message: 'Student can only participate to an evaluation once.',
 )]
-class StudentCopy implements EntityInterface
+class StudentCopy implements OwnedEntityInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -24,15 +25,15 @@ class StudentCopy implements EntityInterface
     private ?int $id = null;
 
     #[ORM\Column]
-    #[Groups('fetchStudentCopy')]
+    #[Groups(['fetchStudentCopy', 'fetchAnswer'])]
     private ?bool $canShare = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups('fetchStudentCopy')]
+    #[Groups(['fetchStudentCopy', 'fetchAnswer'])]
     private ?string $commentary = null;
 
     #[ORM\Column(nullable: true)]
-    #[Groups('fetchStudentCopy')]
+    #[Groups(['fetchStudentCopy', 'fetchAnswer'])]
     private ?int $averageScore = null;
 
     #[ORM\OneToMany(mappedBy: 'studentCopy', targetEntity: StudentAnswer::class, orphanRemoval: true)]
@@ -41,7 +42,6 @@ class StudentCopy implements EntityInterface
 
     #[ORM\ManyToOne(inversedBy: 'studentCopies')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups('fetchStudentCopy')]
     private ?User $student = null;
 
     #[ORM\ManyToOne(inversedBy: 'professorCopies')]
@@ -56,6 +56,11 @@ class StudentCopy implements EntityInterface
     {
         $this->canShare = false;
         $this->studentAnswers = new ArrayCollection();
+    }
+
+    public function isOwner(User $user): bool
+    {
+        return $this->getStudent() === $user || $this->getProfessor() === $user;
     }
 
     public function getId(): ?int
