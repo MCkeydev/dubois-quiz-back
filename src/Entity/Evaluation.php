@@ -9,7 +9,6 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints\Callback;
-use Symfony\Component\Validator\Constraints\DateTime;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\NotNull;
 use Symfony\Component\Validator\Constraints\Type;
@@ -54,9 +53,8 @@ class Evaluation implements OwnedEntityInterface
     #[Groups(['getEvaluation'])]
     private ?Quiz $quiz = null;
 
-
     #[ORM\ManyToMany(targetEntity: Formation::class, inversedBy: 'evaluations')]
-    private Collection $Formations;
+    private Collection $formations;
 
     #[ORM\OneToMany(mappedBy: 'evaluation', targetEntity: StudentCopy::class)]
     #[Groups(['getEvaluation'])]
@@ -80,7 +78,7 @@ class Evaluation implements OwnedEntityInterface
         $this->isLocked = false;
         $this->createdAt = new \DateTimeImmutable();
         $this->updatedAt = new \DateTimeImmutable();
-        $this->Formations = new ArrayCollection();
+        $this->formations = new ArrayCollection();
         $this->studentCopies = new ArrayCollection();
     }
 
@@ -167,13 +165,13 @@ class Evaluation implements OwnedEntityInterface
      */
     public function getFormations(): Collection
     {
-        return $this->Formations;
+        return $this->formations;
     }
 
     public function addFormation(Formation $formation): self
     {
-        if (!$this->Formations->contains($formation)) {
-            $this->Formations->add($formation);
+        if (!$this->formations->contains($formation)) {
+            $this->formations->add($formation);
         }
 
         return $this;
@@ -181,7 +179,7 @@ class Evaluation implements OwnedEntityInterface
 
     public function removeFormation(Formation $formation): self
     {
-        $this->Formations->removeElement($formation);
+        $this->formations->removeElement($formation);
 
         return $this;
     }

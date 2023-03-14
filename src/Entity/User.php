@@ -33,10 +33,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, EntityI
     #[ORM\Column]
     private ?string $password = null;
 
-    #[ORM\ManyToOne(inversedBy: 'users')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?Formation $Formation = null;
-
     #[ORM\OneToMany(mappedBy: 'student', targetEntity: StudentCopy::class)]
     private Collection $studentCopies;
 
@@ -55,11 +51,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, EntityI
     #[ORM\OneToMany(mappedBy: 'author', targetEntity: Evaluation::class)]
     private Collection $evaluations;
 
+    #[ORM\ManyToMany(targetEntity: Formation::class, inversedBy: 'users')]
+    private Collection $formations;
+
     public function __construct()
     {
         $this->studentCopies = new ArrayCollection();
         $this->quizzes = new ArrayCollection();
         $this->evaluations = new ArrayCollection();
+        $this->formations = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -130,18 +130,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, EntityI
     {
         // If you store any temporary, sensitive data on the user, clear it here
         // $this->plainPassword = null;
-    }
-
-    public function getFormation(): ?Formation
-    {
-        return $this->Formation;
-    }
-
-    public function setFormation(?Formation $Formation): self
-    {
-        $this->Formation = $Formation;
-
-        return $this;
     }
 
     /**
@@ -284,6 +272,30 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, EntityI
                 $evaluation->setAuthor(null);
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Formation>
+     */
+    public function getFormations(): Collection
+    {
+        return $this->formations;
+    }
+
+    public function addFormation(Formation $formation): self
+    {
+        if (!$this->formations->contains($formation)) {
+            $this->formations->add($formation);
+        }
+
+        return $this;
+    }
+
+    public function removeFormation(Formation $formation): self
+    {
+        $this->formations->removeElement($formation);
 
         return $this;
     }

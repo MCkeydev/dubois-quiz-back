@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -34,7 +35,24 @@ class StudentCopyController extends AbstractController
         ValidatorInterface $validator,
     ): Response
     {
+        // Checks if this the user is a student.
         $this->denyAccessUnlessGranted('ROLE_ELEVE');
+
+        // Fetches all the formations corresponding to the evaluation
+        $formations = $evaluation->getFormations();
+
+
+        $isAllowed = false;
+        // Checks if the user is in one of the Formations of the Evaluation
+        foreach ($formations->toArray() as $key => $value) {
+            if ($value->getUsers()->contains($user)) {
+                $isAllowed = true;
+            };
+
+            if (!$isAllowed) {
+                throw new AccessDeniedException();
+            };
+        }
 
         // TODO: optimize this (no need to run validation twice)
         /**

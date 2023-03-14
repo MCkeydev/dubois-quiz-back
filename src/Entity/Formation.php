@@ -33,8 +33,7 @@ class Formation implements EntityInterface
     #[Groups('api')]
     private Collection $evaluations;
 
-    #[ORM\OneToMany(mappedBy: 'Formation', targetEntity: User::class)]
-    #[Groups('api')]
+    #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'formations')]
     private Collection $users;
 
     public function __construct()
@@ -105,7 +104,7 @@ class Formation implements EntityInterface
     {
         if (!$this->users->contains($user)) {
             $this->users->add($user);
-            $user->setFormation($this);
+            $user->addFormation($this);
         }
 
         return $this;
@@ -114,10 +113,7 @@ class Formation implements EntityInterface
     public function removeUser(User $user): self
     {
         if ($this->users->removeElement($user)) {
-            // set the owning side to null (unless already changed)
-            if ($user->getFormation() === $this) {
-                $user->setFormation(null);
-            }
+            $user->removeFormation($this);
         }
 
         return $this;
