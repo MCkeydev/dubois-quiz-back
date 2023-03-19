@@ -3,4 +3,31 @@ lexik_jwt_authentication:
     public_key: '%env(resolve:JWT_PUBLIC_KEY)%'
     pass_phrase: '%env(JWT_PASSPHRASE)%'
     token_ttl: 604800 # in seconds, default is 3600
+    token_extractors:
+        # check token in a cookie
+        split_cookie:
+            enabled: true
+            cookies:
+                - jwt_hp
+                - jwt_s
+    set_cookies:
+        jwt_hp:
+            lifetime: null
+            samesite: strict
+            secure: false
+            path: /
+            domain: null
+            httpOnly: false
+            split:
+                - header
+                - payload
 
+        jwt_s:
+            lifetime: 0
+            samesite: strict
+            secure: false
+            path: /
+            domain: null
+            httpOnly: true
+            split:
+                - signature

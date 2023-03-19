@@ -60,7 +60,7 @@ class FormationController extends AbstractApiController
         return new JsonResponse($serializer->serialize($formation, 'json', context: [ 'groups' => 'api' ]), Response::HTTP_OK);
     }
 
-    #[Route('/api/formation/{id}', name: 'app_formation_create', methods: ['DELETE'])]
+    #[Route('/api/formation/{id}', name: 'app_formation_delete', methods: ['DELETE'])]
     public function deleteFormation (Formation $formation,
                                     EntityManagerInterface $entityManager,
     ) {

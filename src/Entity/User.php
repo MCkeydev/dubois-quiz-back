@@ -17,14 +17,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, EntityI
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['getEvaluation', 'fetchStudentCopy'])]
+    #[Groups(['getEvaluation', 'fetchStudentCopy', 'getUser'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 180, unique: true)]
-    #[Groups(['getEvaluation', 'fetchStudentCopy'])]
+    #[Groups(['getEvaluation', 'fetchStudentCopy', 'getUser'])]
     private ?string $email = null;
 
     #[ORM\Column]
+    #[Groups(['getUser'])]
     private array $roles = [];
 
     /**
@@ -40,9 +41,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, EntityI
     private Collection $professorCopies;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['getUser'])]
     private ?string $name = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['getUser'])]
     private ?string $surname = null;
 
     #[ORM\OneToMany(mappedBy: 'author', targetEntity: Quiz::class)]
