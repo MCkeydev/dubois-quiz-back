@@ -37,6 +37,8 @@ class Quiz implements OwnedEntityInterface
     #[ORM\JoinColumn(nullable: false)]
     private ?User $author = null;
 
+    private int $author_id;
+
     public function __construct()
     {
         $this->evaluations = new ArrayCollection();

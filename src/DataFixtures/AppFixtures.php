@@ -43,7 +43,7 @@ class AppFixtures extends Fixture
         EvaluationFactory::createMany(12, function () {
             return [
                 'quiz' => QuizFactory::random(),
-                'formations' => FormationFactory::randomSet(random_int(1, 3)),
+                'formation' => FormationFactory::random(),
             ];
         });
 

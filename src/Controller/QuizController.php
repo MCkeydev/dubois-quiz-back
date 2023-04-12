@@ -7,7 +7,6 @@ use App\Entity\Quiz;
 use App\Entity\User;
 use App\Service\ApiRequestValidator;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -33,6 +32,7 @@ class QuizController extends AbstractApiController
         }
 
         $dto->setAuthor($user);
+
         $entityManager->persist($dto);
         $entityManager->flush();
 

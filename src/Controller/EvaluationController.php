@@ -4,10 +4,12 @@ namespace App\Controller;
 
 use App\DTO\CreateEvaluationDTO;
 use App\Entity\Evaluation;
+use App\Entity\Formation;
 use App\Entity\Quiz;
 use App\Entity\User;
 use App\Service\ApiRequestValidator;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,11 +19,13 @@ use Symfony\Component\Serializer\SerializerInterface;
 
 class EvaluationController extends AbstractApiController
 {
-    #[Route('/api/quiz/{id}/evaluation', name: 'app_evaluation_create', methods: ['POST'])]
+    #[Route('/api/quiz/{id}/evaluation/{formation_id}', name: 'app_evaluation_create', methods: ['POST'])]
     public function createEvaluation(
         #[CurrentUser] $user,
         Request $request,
         Quiz $quiz,
+        #[MapEntity(expr: 'repository.find(formation_id)')]
+        Formation $formation,
         ApiRequestValidator $apiRequestValidator,
         EntityManagerInterface $entityManager,
         SerializerInterface $serializer,
@@ -37,6 +41,7 @@ class EvaluationController extends AbstractApiController
 
         $evaluation->setAuthor($user);
         $evaluation->setQuiz($quiz);
+        $evaluation->setFormation($formation);
 
         $entityManager->persist($evaluation);
         $entityManager->flush();
@@ -67,6 +72,7 @@ class EvaluationController extends AbstractApiController
          * and if it does, replace its content.
          */
         $evaluation = $this->deepSetProperties($requestContent, $evaluation);
+
         $entityManager->persist($evaluation);
 
         // Since validation was made in checkRequestValidity, we can persist without revalidating

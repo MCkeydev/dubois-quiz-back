@@ -14,8 +14,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ORM\Entity(repositoryClass: StudentCopyRepository::class)]
 #[UniqueEntity(
     fields: ['student', 'evaluation'],
-    errorPath: 'student',
     message: 'Student can only participate to an evaluation once.',
+    errorPath: 'student',
 )]
 class StudentCopy implements OwnedEntityInterface
 {
@@ -29,12 +29,8 @@ class StudentCopy implements OwnedEntityInterface
     private ?bool $canShare = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['fetchStudentCopy', 'fetchAnswer'])]
+    #[Groups(['fetchStudentCopy', 'fetchAnswer', 'fetchStudentCopyPreview'])]
     private ?string $commentary = null;
-
-    #[ORM\Column(nullable: true)]
-    #[Groups(['fetchStudentCopy', 'fetchAnswer'])]
-    private ?int $averageScore = null;
 
     #[ORM\OneToMany(mappedBy: 'studentCopy', targetEntity: StudentAnswer::class, orphanRemoval: true)]
     #[Groups('fetchStudentCopy')]
@@ -51,6 +47,16 @@ class StudentCopy implements OwnedEntityInterface
     #[ORM\ManyToOne(inversedBy: 'studentCopies')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Evaluation $evaluation = null;
+
+    #[ORM\Column(nullable: true)]
+    #[Groups(['fetchStudentCopyPreview'])]
+    private ?float $score = null;
+
+    #[ORM\Column]
+    private ?bool $isLocked = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $position = null;
 
     public function __construct()
     {
@@ -88,18 +94,6 @@ class StudentCopy implements OwnedEntityInterface
     public function setCommentary(?string $commentary): self
     {
         $this->commentary = $commentary;
-
-        return $this;
-    }
-
-    public function getAverageScore(): ?int
-    {
-        return $this->averageScore;
-    }
-
-    public function setAverageScore(?int $averageScore): self
-    {
-        $this->averageScore = $averageScore;
 
         return $this;
     }
@@ -166,6 +160,42 @@ class StudentCopy implements OwnedEntityInterface
     public function setEvaluation(?Evaluation $evaluation): self
     {
         $this->evaluation = $evaluation;
+
+        return $this;
+    }
+
+    public function getScore(): ?int
+    {
+        return $this->score;
+    }
+
+    public function setScore(?int $score): self
+    {
+        $this->score = $score;
+
+        return $this;
+    }
+
+    public function isIsLocked(): ?bool
+    {
+        return $this->isLocked;
+    }
+
+    public function setIsLocked(bool $isLocked): self
+    {
+        $this->isLocked = $isLocked;
+
+        return $this;
+    }
+
+    public function getPosition(): ?int
+    {
+        return $this->position;
+    }
+
+    public function setPosition(?int $position): self
+    {
+        $this->position = $position;
 
         return $this;
     }

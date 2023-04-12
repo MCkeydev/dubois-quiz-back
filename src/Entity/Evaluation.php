@@ -53,8 +53,7 @@ class Evaluation implements OwnedEntityInterface
     #[Groups(['getEvaluation'])]
     private ?Quiz $quiz = null;
 
-    #[ORM\ManyToMany(targetEntity: Formation::class, inversedBy: 'evaluations')]
-    private Collection $formations;
+
 
     #[ORM\OneToMany(mappedBy: 'evaluation', targetEntity: StudentCopy::class)]
     #[Groups(['getEvaluation'])]
@@ -63,6 +62,13 @@ class Evaluation implements OwnedEntityInterface
     #[ORM\ManyToOne(inversedBy: 'evaluations')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $author = null;
+
+    #[ORM\ManyToOne(inversedBy: 'evaluations')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Formation $formation = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $averageScore = null;
 
     #[Callback]
     public function validateDateTime(ExecutionContextInterface $context) {
@@ -161,30 +167,6 @@ class Evaluation implements OwnedEntityInterface
     }
 
     /**
-     * @return Collection<int, Formation>
-     */
-    public function getFormations(): Collection
-    {
-        return $this->formations;
-    }
-
-    public function addFormation(Formation $formation): self
-    {
-        if (!$this->formations->contains($formation)) {
-            $this->formations->add($formation);
-        }
-
-        return $this;
-    }
-
-    public function removeFormation(Formation $formation): self
-    {
-        $this->formations->removeElement($formation);
-
-        return $this;
-    }
-
-    /**
      * @return Collection<int, StudentCopy>
      */
     public function getStudentCopies(): Collection
@@ -234,6 +216,30 @@ class Evaluation implements OwnedEntityInterface
     public function setAuthor(?User $author): self
     {
         $this->author = $author;
+
+        return $this;
+    }
+
+    public function getFormation(): ?Formation
+    {
+        return $this->formation;
+    }
+
+    public function setFormation(?Formation $formation): self
+    {
+        $this->formation = $formation;
+
+        return $this;
+    }
+
+    public function getAverageScore(): ?int
+    {
+        return $this->averageScore;
+    }
+
+    public function setAverageScore(?int $averageScore): self
+    {
+        $this->averageScore = $averageScore;
 
         return $this;
     }

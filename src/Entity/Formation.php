@@ -29,12 +29,11 @@ class Formation implements EntityInterface
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
-    #[ORM\ManyToMany(targetEntity: Evaluation::class, mappedBy: 'Formations')]
-    #[Groups('api')]
-    private Collection $evaluations;
-
     #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'formations')]
     private Collection $users;
+
+    #[ORM\OneToMany(mappedBy: 'formation', targetEntity: Evaluation::class)]
+    private Collection $evaluations;
 
     public function __construct()
     {
@@ -66,33 +65,6 @@ class Formation implements EntityInterface
     }
 
     /**
-     * @return Collection<int, Evaluation>
-     */
-    public function getEvaluations(): Collection
-    {
-        return $this->evaluations;
-    }
-
-    public function addEvaluation(Evaluation $evaluation): self
-    {
-        if (!$this->evaluations->contains($evaluation)) {
-            $this->evaluations->add($evaluation);
-            $evaluation->addFormation($this);
-        }
-
-        return $this;
-    }
-
-    public function removeEvaluation(Evaluation $evaluation): self
-    {
-        if ($this->evaluations->removeElement($evaluation)) {
-            $evaluation->removeFormation($this);
-        }
-
-        return $this;
-    }
-
-    /**
      * @return Collection<int, User>
      */
     public function getUsers(): Collection
@@ -114,6 +86,36 @@ class Formation implements EntityInterface
     {
         if ($this->users->removeElement($user)) {
             $user->removeFormation($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Evaluation>
+     */
+    public function getEvaluations(): Collection
+    {
+        return $this->evaluations;
+    }
+
+    public function addEvaluation(Evaluation $evaluation): self
+    {
+        if (!$this->evaluations->contains($evaluation)) {
+            $this->evaluations->add($evaluation);
+            $evaluation->setFormation($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEvaluation(Evaluation $evaluation): self
+    {
+        if ($this->evaluations->removeElement($evaluation)) {
+            // set the owning side to null (unless already changed)
+            if ($evaluation->getFormation() === $this) {
+                $evaluation->setFormation(null);
+            }
         }
 
         return $this;

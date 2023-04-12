@@ -19,6 +19,7 @@ class ApiLoginController extends AbstractController
                  'message' => 'missing credentials',
             ], Response::HTTP_UNAUTHORIZED);
          }
+
           return $this->json([
                            'message' => 'Welcome to your new controller!',
                            'path' => 'src/Controller/ApiLoginController.php',
