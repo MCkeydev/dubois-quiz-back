@@ -4,10 +4,13 @@ namespace App\Controller;
 
 use App\DTO\GradeCopyDTO;
 use App\Entity\Evaluation;
+use App\Entity\Question;
 use App\Entity\StudentCopy;
 use App\Entity\User;
 use App\Service\ApiRequestValidator;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Criteria;
+use Doctrine\Common\Collections\ExpressionBuilder;
 use Doctrine\Common\Collections\ReadableCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Exception\JsonException;
@@ -20,6 +23,7 @@ use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use function Symfony\Component\DependencyInjection\Loader\Configurator\expr;
 
 class StudentCopyController extends AbstractApiController
 {
@@ -144,6 +148,16 @@ class StudentCopyController extends AbstractApiController
         }
     }
 
+    /**
+     * Entry point for teachers to grade student copies
+     *
+     * @param Request $request
+     * @param User $user
+     * @param StudentCopy $studentCopy
+     * @param EntityManagerInterface $entityManager
+     * @param ApiRequestValidator $apiRequestValidator
+     * @return JsonResponse
+     */
     #[Route('/api/evaluation/studentCopy/{id}/grade', name: 'app_student_copy_grade', methods: ['PUT'])]
     public function gradeStudentCopy(
         Request $request,
@@ -184,7 +198,16 @@ class StudentCopyController extends AbstractApiController
         return $this->json($studentCopy, context: ['groups' => ['fetchStudentCopyPreview']]);
     }
 
-
+    /**
+     * Entry point to get the preview of a studentCopy
+     * (placement, grade, class average score, formation, quizz)
+     * @param int $id
+     * @param User $user
+     * @param EntityManagerInterface $entityManager
+     * @param NormalizerInterface $normalizer
+     * @return JsonResponse|Response
+     * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
+     */
     #[Route('/api/evaluation/{id}/studentCopy/preview', name: 'app_student_copy_get', methods: ['GET'])]
     public function getStudentCopyPreview(
         int $id,
@@ -200,16 +223,40 @@ class StudentCopyController extends AbstractApiController
         }
 
         // Creates an associative array with all the requested data
-        $responseData = Array('studentCopy' => $normalizer->normalize($studentCopy, context: ['groups' => 'fetchStudentCopyPreview']));
+        return $this->createsStudentCopyPreview($normalizer, $studentCopy);
+    }
 
-        $evalutation = $studentCopy->getEvaluation();
+    #[Route('/api/evaluation/studentCopy/preview/last', name: 'app_student_last_copy_preview', methods: ['GET'])]
+    public function getLastStudentCopyPreview(
+        #[CurrentUser] User $user,
+        EntityManagerInterface $entityManager,
+        NormalizerInterface $normalizer,
+    )
+    {
+        $studentCopy = $entityManager->getRepository(StudentCopy::class)->findLastGradedCopy($user);
+        // Creates an associative array with all the requested data
+        return $this->createsStudentCopyPreview($normalizer, $studentCopy);
+    }
 
-        $responseData['formation'] = $normalizer->normalize($evalutation->getFormation(), context: ['groups' => 'api']);
-        $responseData['quiz'] = $normalizer->normalize($evalutation->getQuiz(), context: ['groups' => 'api']);
+    /**
+     * @param NormalizerInterface $normalizer
+     * @param StudentCopy|null $studentCopy
+     * @return JsonResponse
+     * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
+     */
+    private function createsStudentCopyPreview(NormalizerInterface $normalizer, ?StudentCopy $studentCopy): JsonResponse
+    {
+        $responseData = array('studentCopy' => $normalizer->normalize($studentCopy, context: ['groups' => 'fetchStudentCopyPreview']));
 
+        $evaluation = $studentCopy->getEvaluation();
 
-        $quiz = $evalutation->getQuiz();
+        $responseData['formation'] = $normalizer->normalize($evaluation->getFormation(), context: ['groups' => 'api']);
+        $responseData['evaluation'] = $normalizer->normalize($evaluation, context: ['groups' => 'api']);
+        $responseData['evaluation']['maxScore'] = $evaluation->getQuiz()->getQuestions()->reduce(function(int $accumulator, Question $question): int {
+            return $accumulator + $question->getMaxScore();
+        }, 0);
+        $responseData['evaluation']['copyCount'] = $evaluation->getStudentCopies()->count();
 
-        return $this->json($studentCopy, context: ['groups' => 'fetchStudentCopyPreview']);
+        return $this->json($responseData);
     }
 }

@@ -56,7 +56,11 @@ class StudentCopy implements OwnedEntityInterface
     private ?bool $isLocked = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(['fetchStudentCopyPreview'])]
     private ?int $position = null;
+
+    #[ORM\Column]
+    private ?\DateTimeImmutable $createdAt = null;
 
     public function __construct()
     {
@@ -196,6 +200,18 @@ class StudentCopy implements OwnedEntityInterface
     public function setPosition(?int $position): self
     {
         $this->position = $position;
+
+        return $this;
+    }
+
+    public function getCreatedAt(): ?\DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(\DateTimeImmutable $createdAt): self
+    {
+        $this->createdAt = $createdAt;
 
         return $this;
     }

@@ -53,8 +53,6 @@ class Evaluation implements OwnedEntityInterface
     #[Groups(['getEvaluation'])]
     private ?Quiz $quiz = null;
 
-
-
     #[ORM\OneToMany(mappedBy: 'evaluation', targetEntity: StudentCopy::class)]
     #[Groups(['getEvaluation'])]
     private Collection $studentCopies;
@@ -68,6 +66,7 @@ class Evaluation implements OwnedEntityInterface
     private ?Formation $formation = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups('api')]
     private ?int $averageScore = null;
 
     #[Callback]

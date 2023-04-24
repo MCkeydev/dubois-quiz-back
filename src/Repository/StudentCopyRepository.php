@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\StudentCopy;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -37,6 +38,19 @@ class StudentCopyRepository extends ServiceEntityRepository
         if ($flush) {
             $this->getEntityManager()->flush();
         }
+    }
+
+        public function findLastGradedCopy(User $user): ?StudentCopy
+    {
+        return $this->createQueryBuilder('s')
+            ->andWhere('s.student = :val')
+            ->setParameter('val', $user->getId())
+            ->andWhere('s.score IS NOT NULL')
+            ->orderBy('s.createdAt', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult()
+            ;
     }
 
 //    /**
