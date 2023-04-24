@@ -47,16 +47,19 @@ class EvaluationRepository extends ServiceEntityRepository
      */
     public function findIncomingEvaluations(Formation $formation, User $user): array
     {
-//         On choppe toutes les evals ou il y a une studentCopy correpondant à l'user
+        // We fetch all the evaluations for which the user created a StudenCopy
         $subQb = $this->createQueryBuilder('e1')
             ->select('e1')
             ->join('e1.studentCopies', 's')
             ->andWhere('s.student = :user');
 
         $qb = $this->createQueryBuilder('e');
-//
-//        // la on a toutes les evaluations de la formation
-//        // Nous on veut que les evaluations ou il n'y a pas de studentCopy avec id = user.id
+
+        /**
+         * We then fetch all the evaluations for the current formation,
+         * where evaluation.id is not in the previous query
+         * (meaning we fetch all evaluations with no studentCopy)
+         */
         return $qb->leftjoin('e.studentCopies', 'sc')
             ->andWhere('e.formation = :formation')
             ->setParameter('formation', $formation)

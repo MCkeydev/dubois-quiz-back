@@ -30,14 +30,20 @@ class HomeController extends AbstractController
         return $this->json($formations, context: ['groups' => 'api']);
     }
 
-    #[Route('/api/evaluations/incoming', name: 'app_evaluation_get', methods: ['GET'])]
+    #[Route('/api/evaluations/incoming/{id}', name: 'app_evaluation_get', methods: ['GET'])]
     public function getIncomingEvaluations(
         #[CurrentUser] User $user,
         EntityManagerInterface $em,
     ) {
         $formations = $user->getFormations();
+
+        $evaluations = [];
+
+
         foreach ($formations as $index => $formation) {
-            dd($em->getRepository(Evaluation::class)->findIncomingEvaluations($formation, $user));
+            $evaluations[] = $em->getRepository(Evaluation::class)->findIncomingEvaluations($formation, $user);
         }
+
+        return $this->json($evaluations, context: ['groups' => 'api']);
     }
 }
