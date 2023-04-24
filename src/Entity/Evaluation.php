@@ -50,7 +50,7 @@ class Evaluation implements OwnedEntityInterface
 
     #[ORM\ManyToOne(inversedBy: 'evaluations')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['getEvaluation'])]
+    #[Groups(['getEvaluation', 'api'])]
     private ?Quiz $quiz = null;
 
     #[ORM\OneToMany(mappedBy: 'evaluation', targetEntity: StudentCopy::class)]

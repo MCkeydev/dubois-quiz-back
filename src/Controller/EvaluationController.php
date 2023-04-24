@@ -14,11 +14,24 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\Serializer\SerializerInterface;
 
 class EvaluationController extends AbstractApiController
 {
+    #[Route('/api/evaluation/{id}', name: 'app_evaluation_get', methods: ['GET'])]
+    public function getEvaluation(
+        Evaluation $evaluation,
+        #[CurrentUser] User $user,
+    ) {
+        if (!$user->getFormations()->contains($evaluation->getFormation())) {
+            throw $this->createAccessDeniedException();
+        }
+
+        return $this->json($evaluation, context: ['groups' => 'getEvaluation']);
+    }
+
     #[Route('/api/quiz/{id}/evaluation/{formation_id}', name: 'app_evaluation_create', methods: ['POST'])]
     public function createEvaluation(
         #[CurrentUser] $user,

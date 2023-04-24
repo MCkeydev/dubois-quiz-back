@@ -3,7 +3,10 @@
 namespace App\Repository;
 
 use App\Entity\Evaluation;
+use App\Entity\Formation;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -37,6 +40,30 @@ class EvaluationRepository extends ServiceEntityRepository
         if ($flush) {
             $this->getEntityManager()->flush();
         }
+    }
+
+        /**
+     * @return Evaluation[] Returns an array of Evaluation objects
+     */
+    public function findIncomingEvaluations(Formation $formation, User $user): array
+    {
+//         On choppe toutes les evals ou il y a une studentCopy correpondant à l'user
+        $subQb = $this->createQueryBuilder('e1')
+            ->select('e1')
+            ->join('e1.studentCopies', 's')
+            ->andWhere('s.student = :user');
+
+        $qb = $this->createQueryBuilder('e');
+//
+//        // la on a toutes les evaluations de la formation
+//        // Nous on veut que les evaluations ou il n'y a pas de studentCopy avec id = user.id
+        return $qb->leftjoin('e.studentCopies', 'sc')
+            ->andWhere('e.formation = :formation')
+            ->setParameter('formation', $formation)
+            ->andWhere($qb->expr()->notIn('e.id', $subQb->getDQL()))
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->getResult();
     }
 
 //    /**
