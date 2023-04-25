@@ -24,21 +24,21 @@ class Evaluation implements OwnedEntityInterface
     private ?int $id = null;
 
     #[ORM\Column]
-    #[Groups(['getEvaluation'])]
+    #[Groups(['getEvaluation', 'api'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
     #[Type('DateTimeImmutable')]
     #[NotBlank]
     #[NotNull]
-    #[Groups(['getEvaluation'])]
+    #[Groups(['getEvaluation', 'api'])]
     private ?\DateTimeImmutable $startsAt = null;
 
     #[ORM\Column]
     #[Type('DateTimeImmutable')]
     #[NotBlank]
     #[NotNull]
-    #[Groups(['getEvaluation'])]
+    #[Groups(['getEvaluation', 'api'])]
     private ?\DateTimeImmutable $endsAt = null;
 
     #[ORM\Column]
@@ -63,6 +63,7 @@ class Evaluation implements OwnedEntityInterface
 
     #[ORM\ManyToOne(inversedBy: 'evaluations')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['api'])]
     private ?Formation $formation = null;
 
     #[ORM\Column(nullable: true)]

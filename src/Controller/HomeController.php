@@ -30,7 +30,7 @@ class HomeController extends AbstractController
         return $this->json($formations, context: ['groups' => 'api']);
     }
 
-    #[Route('/api/evaluations/incoming/{id}', name: 'app_evaluation_get', methods: ['GET'])]
+    #[Route('/api/evaluations/incoming', name: 'app_evaluation_get', methods: ['GET'])]
     public function getIncomingEvaluations(
         #[CurrentUser] User $user,
         EntityManagerInterface $em,
