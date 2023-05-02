@@ -20,7 +20,7 @@ class Evaluation implements OwnedEntityInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['getEvaluation'])]
+    #[Groups(['getEvaluation', 'api'])]
     private ?int $id = null;
 
     #[ORM\Column]
