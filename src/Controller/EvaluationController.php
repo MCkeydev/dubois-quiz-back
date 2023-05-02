@@ -25,6 +25,7 @@ class EvaluationController extends AbstractApiController
         Evaluation $evaluation,
         #[CurrentUser] User $user,
     ) {
+        // Checks if the user is a member of the evaluation's formation
         if (!$user->getFormations()->contains($evaluation->getFormation())) {
             throw $this->createAccessDeniedException();
         }
@@ -72,9 +73,10 @@ class EvaluationController extends AbstractApiController
         SerializerInterface $serializer,
     ): JsonResponse
     {
-        // Checks if the user is the owner of the quizz
+        // Checks if the user is the owner of the quiz
         $this->isAllowedOnRessource($evaluation, $user);
 
+        // Checks if the request matches the model of the data
         $apiRequestValidator->checkRequestValidity($request, CreateEvaluationDTO::class);
 
         // If the user is allowed, we need to validate the request

@@ -57,6 +57,7 @@ class StudentAnswerController extends AbstractApiController
 
         $this->checkEvaluationAvailable($studentCopy->getEvaluation());
 
+        // TODO : Use answer count instead of isQcm()
         // MCQ can not be answered in this route
         if ($question->isIsQcm()) {
             throw new BadRequestHttpException();
@@ -85,13 +86,11 @@ class StudentAnswerController extends AbstractApiController
     #[Route('/api/studentCopy/{id}/question/answers/{answer_id}', name: 'app_student_answer_qcm', methods: ['POST'])]
     public function createQcmAnswer(
         #[CurrentUser] User $user,
-        Request $request,
         StudentCopy $studentCopy,
         #[MapEntity(expr: 'repository.find(answer_id)')]
         Answer $answer,
         EntityManagerInterface $entityManager,
         ValidatorInterface $validator,
-        SerializerInterface $serializer,
     ): Response
     {
         // Only students can add answers to their copies.

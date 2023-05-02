@@ -23,7 +23,7 @@ class Question implements OwnedEntityInterface
     private ?bool $isQcm = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['api', 'fetchAnswer'])]
+    #[Groups(['api', 'fetchAnswer', 'getEvaluation'])]
     private ?string $title = null;
 
     #[ORM\Column]
@@ -35,7 +35,7 @@ class Question implements OwnedEntityInterface
     private ?Quiz $Quiz = null;
 
     #[ORM\OneToMany(mappedBy: 'Question', targetEntity: Answer::class, cascade: ['persist'], orphanRemoval: true)]
-    #[Groups('api')]
+    #[Groups(['api', 'getEvaluation'])]
     private Collection $answers;
 
     #[ORM\OneToMany(mappedBy: 'question', targetEntity: StudentAnswer::class, orphanRemoval: true)]

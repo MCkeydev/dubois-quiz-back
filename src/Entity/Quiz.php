@@ -23,18 +23,19 @@ class Quiz implements OwnedEntityInterface
     #[ORM\Column(length: 255)]
     #[NotBlank]
     #[NotNull]
-    #[Groups('api')]
+    #[Groups(['api', 'getEvaluation'])]
     private ?string $title = null;
 
     #[ORM\OneToMany(mappedBy: 'quiz', targetEntity: Evaluation::class)]
     private Collection $evaluations;
 
     #[ORM\OneToMany(mappedBy: 'Quiz', targetEntity: Question::class, orphanRemoval: true)]
-    #[Groups('api')]
+    #[Groups(['api', 'getEvaluation'])]
     private Collection $questions;
 
     #[ORM\ManyToOne(inversedBy: 'quizzes')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['getEvaluation'])]
     private ?User $author = null;
 
     private int $author_id;

@@ -19,10 +19,10 @@ class Answer implements EntityInterface
     #[ORM\Column]
     private ?int $id = null;
 
-    #[Groups('api')]
     #[NotNull]
     #[NotBlank]
     #[ORM\Column(length: 255)]
+    #[Groups(['getEvaluation', 'api'])]
     private ?string $title = null;
 
     #[ORM\ManyToOne(inversedBy: 'answers')]
