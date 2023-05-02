@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\DTO\CreateStudentAnswerDTO;
 use App\DTO\GradeCopyDTO;
 use App\Entity\Evaluation;
 use App\Entity\Question;
@@ -27,73 +28,43 @@ use function Symfony\Component\DependencyInjection\Loader\Configurator\expr;
 
 class StudentCopyController extends AbstractApiController
 {
+
     /**
-     * Route to create a student copy object.
-     * Only allowed on students.
-     * @return Response
-     * @throws \JsonException
+     * Route to submitStudentCopy, and create all the student answers
      */
-    #[Route('/api/evaluation/{id}/studentCopy', name: 'app_student_copy_create', methods: ['POST'])]
-    public function createStudentCopy (
+    #[Route('/api/evaluation/{id}/studentCopy/submit', name: 'app_student_copy_submit', methods: ['POST'])]
+    public function submitStudentCopy(
         #[CurrentUser] User $user,
         Request $request,
         Evaluation $evaluation,
-        ApiRequestValidator $apiRequestValidator,
         EntityManagerInterface $entityManager,
-        SerializerInterface $serializer,
-        ValidatorInterface $validator,
-    ): Response
+        ApiRequestValidator $validator,
+    )
     {
-        // TODO: optimize this (no need to run validation twice)
-
-        // Checks if this the user is a student.
-        $this->denyAccessUnlessGranted('ROLE_ELEVE');
-
-        /** Checking user is allowed */
-
-        // Fetches all the formations corresponding to the evaluation
+        // Before any further processing, we must make sure that the user is allowed on the evaluation
+        // Fetches all the formations allowed on the evaluation
         $formation = $evaluation->getFormation();
 
         // Checks if the user is a part of the formation
-        if (!$formation->getUsers()->contains($user)) {
+        if ($formation->getUsers()->contains($user)) {
             throw new AccessDeniedException();
         }
+        // Here me want to create studentCopy, and its answers in one take
 
-        $dateNow =  new \DateTimeImmutable();
+        // Validates, and instantiates DTO
+        $dto = $validator->checkRequestValidity($request, CreateStudentAnswerDTO::class);
 
-        /** Checking the timeframe is not over */
-        if ($evaluation->getStartsAt() > $dateNow || $dateNow > $evaluation->getEndsAt()) {
-            throw new \JsonException('The evaluation can only be accessed within its time frame');
+        // Here we now want to create or fetch a studentCopy
+        // If the student copy already exists we use it, otherwise we create it
+        $studentCopy = $entityManager->getRepository(StudentCopy::class)->findOneBy([ 'student' => $user, 'evaluation' => $evaluation ]);
+
+        // If not studentCopy was found, we create one
+        if (null === $studentCopy) {
+            $studentCopy = (new StudentCopy())->setEvaluation($evaluation)->setStudent($user);
         }
 
-        /**
-         * @var StudentCopy $studentCopy
-         */
-        $studentCopy = $apiRequestValidator->checkRequestValidity($request, StudentCopy::class);
+        dd($studentCopy);
 
-        $studentCopy->setStudent($user);
-        $studentCopy->setProfessor($evaluation->getAuthor());
-        $studentCopy->setEvaluation($evaluation);
-
-        $errors = $validator->validate($studentCopy);
-
-        if (count($errors) > 0) {
-            throw new JsonException($errors);
-        }
-
-        $entityManager->persist($studentCopy);
-        $entityManager->flush();
-
-        return new JsonResponse($serializer->serialize($studentCopy, 'json', [ 'groups' => 'fetchStudentCopy' ]), Response::HTTP_CREATED);
-    }
-
-    #[Route('/api/evaluation/studentCopy/{id}/submit', name: 'app_student_copy_submit', methods: ['GET'])]
-    public function submitStudentCopy(
-        #[CurrentUser] User $user,
-        StudentCopy $studentCopy,
-        EntityManagerInterface $entityManager,
-    )
-    {
         $this->isAllowedOnRessource($studentCopy, $user);
 
         $studentCopy->setIsLocked(true);
@@ -101,6 +72,73 @@ class StudentCopyController extends AbstractApiController
 
         return $this->json($studentCopy, context: ['groups' => 'fetchStudentCopy']);
     }
+
+    /**
+     * Route to create a student copy object.
+     * Only allowed on students.
+     * @param User $user
+     * @param Request $request
+     * @param Evaluation $evaluation
+     * @param ApiRequestValidator $apiRequestValidator
+     * @param EntityManagerInterface $entityManager
+     * @param SerializerInterface $serializer
+     * @param ValidatorInterface $validator
+     * @return Response
+     * @throws \JsonException
+     */
+//    #[Route('/api/evaluation/{id}/studentCopy', name: 'app_student_copy_create', methods: ['POST'])]
+//    public function createStudentCopy (
+//        #[CurrentUser] User $user,
+//        Request $request,
+//        Evaluation $evaluation,
+//        ApiRequestValidator $apiRequestValidator,
+//        EntityManagerInterface $entityManager,
+//        SerializerInterface $serializer,
+//        ValidatorInterface $validator,
+//    ): Response
+//    {
+//        // TODO: optimize this (no need to run validation twice)
+//
+//        // Checks if this the user is a student.
+//        $this->denyAccessUnlessGranted('ROLE_ELEVE');
+//
+//        /** Checking user is allowed */
+//
+//        // Fetches all the formations corresponding to the evaluation
+//        $formation = $evaluation->getFormation();
+//
+//        // Checks if the user is a part of the formation
+//        if (!$formation->getUsers()->contains($user)) {
+//            throw new AccessDeniedException();
+//        }
+//
+//        $dateNow =  new \DateTimeImmutable();
+//
+//        /** Checking the timeframe is not over */
+//        if ($evaluation->getStartsAt() > $dateNow || $dateNow > $evaluation->getEndsAt()) {
+//            throw new \JsonException('The evaluation can only be accessed within its time frame');
+//        }
+//
+//        /**
+//         * @var StudentCopy $studentCopy
+//         */
+//        $studentCopy = $apiRequestValidator->checkRequestValidity($request, StudentCopy::class);
+//
+//        $studentCopy->setStudent($user);
+//        $studentCopy->setProfessor($evaluation->getAuthor());
+//        $studentCopy->setEvaluation($evaluation);
+//
+//        $errors = $validator->validate($studentCopy);
+//
+//        if (count($errors) > 0) {
+//            throw new JsonException($errors);
+//        }
+//
+//        $entityManager->persist($studentCopy);
+//        $entityManager->flush();
+//
+//        return new JsonResponse($serializer->serialize($studentCopy, 'json', [ 'groups' => 'fetchStudentCopy' ]), Response::HTTP_CREATED);
+//    }
 
     /**
      * Calculates the average score of an evaluation.
