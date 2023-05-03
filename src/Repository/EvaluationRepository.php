@@ -65,6 +65,8 @@ class EvaluationRepository extends ServiceEntityRepository
             ->setParameter('formation', $formation)
             ->andWhere($qb->expr()->notIn('e.id', $subQb->getDQL()))
             ->setParameter('user', $user)
+            ->andWhere('e.endsAt > :date')
+            ->setParameter('date', new \DateTimeImmutable())
             ->getQuery()
             ->getResult();
     }
