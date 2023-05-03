@@ -4,8 +4,10 @@ namespace App\Controller;
 
 use App\DTO\CreateStudentAnswerDTO;
 use App\DTO\GradeCopyDTO;
+use App\Entity\Answer;
 use App\Entity\Evaluation;
 use App\Entity\Question;
+use App\Entity\StudentAnswer;
 use App\Entity\StudentCopy;
 use App\Entity\User;
 use App\Service\ApiRequestValidator;
@@ -34,11 +36,12 @@ class StudentCopyController extends AbstractApiController
      */
     #[Route('/api/evaluation/{id}/studentCopy/submit', name: 'app_student_copy_submit', methods: ['POST'])]
     public function submitStudentCopy(
-        #[CurrentUser] User $user,
-        Request $request,
-        Evaluation $evaluation,
+        #[CurrentUser] User    $user,
+        Request                $request,
+        Evaluation             $evaluation,
         EntityManagerInterface $entityManager,
-        ApiRequestValidator $validator,
+        ApiRequestValidator    $apiRequestValidator,
+        ValidatorInterface     $validator,
     )
     {
         // Before any further processing, we must make sure that the user is allowed on the evaluation
@@ -46,26 +49,84 @@ class StudentCopyController extends AbstractApiController
         $formation = $evaluation->getFormation();
 
         // Checks if the user is a part of the formation
-        if ($formation->getUsers()->contains($user)) {
+        if (!$formation->getUsers()->contains($user)) {
             throw new AccessDeniedException();
         }
-        // Here me want to create studentCopy, and its answers in one take
 
-        // Validates, and instantiates DTO
-        $dto = $validator->checkRequestValidity($request, CreateStudentAnswerDTO::class);
+        // Here me want to create studentCopy, and each of its studentAnswers in one take
 
-        // Here we now want to create or fetch a studentCopy
+        // Decodes the json to allow iterating the request content
+        $requestArray = json_decode($request->getContent(), true);
+
+        // Stores all the evalution's questions
+        $questions = $evaluation->getQuiz()->getQuestions();
+
+        $dtoArray = [];
+
+        /**
+         * Validates each of the request's array elements to match the DTO
+         * Now that we have an array of DTO's, we want to make sure that the question is in fact,
+         * related to the evaluation.
+         */
+        foreach ($requestArray as $_ => $value) {
+            // Checks the type and structure of request and instantiates a dto
+            $dtoArray[] = $apiRequestValidator->checkRequestValidity(json_encode($value), CreateStudentAnswerDTO::class, isArray: true);
+        }
+
         // If the student copy already exists we use it, otherwise we create it
         $studentCopy = $entityManager->getRepository(StudentCopy::class)->findOneBy([ 'student' => $user, 'evaluation' => $evaluation ]);
 
-        // If not studentCopy was found, we create one
+        // If no studentCopy was found, we create one
         if (null === $studentCopy) {
             $studentCopy = (new StudentCopy())->setEvaluation($evaluation)->setStudent($user);
+            $entityManager->persist($studentCopy);
         }
 
-        dd($studentCopy);
+        // TODO : comment this, and throw errors
 
-        $this->isAllowedOnRessource($studentCopy, $user);
+        // Loops over all the dtos to create corresponding student answers
+        /**
+         * @var CreateStudentAnswerDTO $dto
+         */
+        foreach ($dtoArray as $_ => $dto) {
+            // If the request's question is present in the evaluation's question, we can continue
+            if ($question = $questions->findFirst(function (int $key, Question $value) use ($dto) {
+                return $value->getId() === $dto->question;
+            })) {
+                // Gets all the answers of the question
+                $answers = $question->getAnswers();
+                // If there is more than one, and one corresponds to the choice in the dto
+                if ($answers->count() > 1 && $dto->choice && $answer = $answers->findFirst(function (int $key, Answer $value) use ($dto) {
+                        return $value->getId() === $dto->choice;
+                    })) {
+                    $studentAnswer = (new StudentAnswer())
+                        ->setStudentCopy($studentCopy)
+                        ->setQuestion($question)
+                        ->setChoice($answer);
+                } else if ($dto->answer) {
+                    $studentAnswer = (new StudentAnswer())
+                        ->setStudentCopy($studentCopy)
+                        ->setQuestion($question)
+                        ->setAnswer($dto->answer);
+
+                }
+
+                $errors = $validator->validate($studentAnswer);
+
+                if (count($errors) > 0) {
+                    /*
+                     * Uses a __toString method on the $errors variable which is a
+                     * ConstraintViolationList object. This gives us a nice string
+                     * for debugging.
+                     */
+                    $errorsString = (string) $errors;
+
+                    return new Response($errorsString);
+                }
+
+                $entityManager->persist($studentAnswer);
+            };
+        }
 
         $studentCopy->setIsLocked(true);
         $entityManager->flush();

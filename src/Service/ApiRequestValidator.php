@@ -31,10 +31,10 @@ class ApiRequestValidator
         $this->validator = $validator;
     }
 
-    public function checkRequestValidity(Request $request, string $type, string $format = 'json'): mixed
+    public function checkRequestValidity(Request|string $request, string $type, string $format = 'json', $isArray = true): mixed
     {
         try {
-            $dto = $this->serializer->deserialize($request->getContent(), $type, $format, [
+            $dto = $this->serializer->deserialize(!$isArray ? $request->getContent() : $request, $type, $format, [
                 DenormalizerInterface::COLLECT_DENORMALIZATION_ERRORS => true,
             ]);
 

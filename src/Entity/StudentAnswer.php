@@ -13,8 +13,8 @@ use Symfony\Component\Validator\Constraints\NotNull;
 #[ORM\Entity(repositoryClass: StudentAnswerRepository::class)]
 #[UniqueEntity(
     fields: ['studentCopy', 'question'],
-    errorPath: 'question',
     message: 'Student can only answer a question once.',
+    errorPath: 'question',
 )]
 class StudentAnswer implements EntityInterface
 {

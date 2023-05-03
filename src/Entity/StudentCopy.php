@@ -40,10 +40,6 @@ class StudentCopy implements OwnedEntityInterface
     #[ORM\JoinColumn(nullable: false)]
     private ?User $student = null;
 
-    #[ORM\ManyToOne(inversedBy: 'professorCopies')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?User $professor = null;
-
     #[ORM\ManyToOne(inversedBy: 'studentCopies')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Evaluation $evaluation = null;
@@ -66,6 +62,7 @@ class StudentCopy implements OwnedEntityInterface
     {
         $this->canShare = false;
         $this->studentAnswers = new ArrayCollection();
+        $this->createdAt = new \DateTimeImmutable();
     }
 
     public function isOwner(User $user): bool
