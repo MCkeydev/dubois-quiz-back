@@ -121,7 +121,7 @@ class StudentCopyController extends AbstractApiController
                      */
                     $errorsString = (string) $errors;
 
-                    return new Response($errorsString);
+                    return new Response($errorsString, Response::HTTP_BAD_REQUEST);
                 }
 
                 $entityManager->persist($studentAnswer);
@@ -333,8 +333,14 @@ class StudentCopyController extends AbstractApiController
     )
     {
         $studentCopy = $entityManager->getRepository(StudentCopy::class)->findLastGradedCopy($user);
-        // Creates an associative array with all the requested data
-        return $this->createsStudentCopyPreview($normalizer, $studentCopy);
+
+        if (null !== $studentCopy) {
+            // Creates an associative array with all the requested data
+            return $this->createsStudentCopyPreview($normalizer, $studentCopy);
+        }
+
+        return $this->json([], Response::HTTP_NOT_FOUND);
+
     }
 
     /**

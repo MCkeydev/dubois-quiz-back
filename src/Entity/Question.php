@@ -15,7 +15,7 @@ class Question implements OwnedEntityInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['api', 'fetchAnswer'])]
+    #[Groups(['api', 'fetchAnswer', 'getEvaluation'])]
     private ?int $id = null;
 
     #[ORM\Column]

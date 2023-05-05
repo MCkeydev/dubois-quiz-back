@@ -42,8 +42,8 @@ class StudentAnswer implements EntityInterface
     private ?Question $question = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups('fetchAnswer')]
     #[NotBlank(allowNull: true)]
+    #[Groups('fetchAnswer')]
     private ?string $answer = null;
 
     #[ORM\ManyToOne]
