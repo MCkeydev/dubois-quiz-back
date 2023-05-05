@@ -39,11 +39,23 @@ class HomeController extends AbstractController
 
         $evaluations = [];
 
-
         foreach ($formations as $index => $formation) {
             $evaluations[] = $em->getRepository(Evaluation::class)->findIncomingEvaluations($formation, $user);
         }
 
+        if ($this->isDeepEmptyArray($evaluations)) {
+            return $this->json([], Response::HTTP_NOT_FOUND);
+        }
+
         return $this->json($evaluations, context: ['groups' => 'api']);
+    }
+
+    public function isDeepEmptyArray(array $tableau): bool {
+        foreach ($tableau as $element) {
+            if (!is_array($element) || count($element) !== 0) {
+                return false;
+            }
+        }
+        return true;
     }
 }

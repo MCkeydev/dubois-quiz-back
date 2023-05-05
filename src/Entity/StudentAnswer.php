@@ -7,8 +7,10 @@ use App\Repository\StudentAnswerRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints\Callback;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\NotNull;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: StudentAnswerRepository::class)]
 #[UniqueEntity(
@@ -48,6 +50,14 @@ class StudentAnswer implements EntityInterface
 
     #[ORM\ManyToOne]
     private ?Answer $choice = null;
+
+    #[Callback]
+    public function validate(ExecutionContextInterface $context) {
+        if ($this->score > $this->getQuestion()->getMaxScore()) {
+            $context->buildViolation('La note attribuée à la réponse ne peut pas être plus haute que celle indiquée sur le barême.')->atPath('score')
+                ->addViolation();
+        }
+    }
 
     public function getId(): ?int
     {
