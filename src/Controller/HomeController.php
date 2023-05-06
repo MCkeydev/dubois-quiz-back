@@ -42,15 +42,8 @@ class HomeController extends AbstractController
         #[CurrentUser] User $user,
         EntityManagerInterface $em,
     ): JsonResponse {
-        // Récupère toutes les formations de l'utilisateur
-        $formations = $user->getFormations();
-
-        // Initialisation d'un tableau vide pour stocker les traitements de la boucle
-        $evaluations = [];
-
-        foreach ($formations as $_ => $formation) {
-            $evaluations = array_merge($evaluations, $em->getRepository(Evaluation::class)->findOngoingEvaluations($formation, $user));
-        }
+        // Requête en base de donnée de toutes les évaluations en cours de l'utilisateur
+        $evaluations = $em->getRepository(Evaluation::class)->findOngoingEvaluations($user);
 
         // Si aucune évaluation n'a été trouvée, renvoies une erreur 404
         if (0 === count($evaluations)) {

@@ -47,7 +47,7 @@ class EvaluationRepository extends ServiceEntityRepository
      *
      * @return Evaluation[]
      */
-    public function findOngoingEvaluations(Formation $formation, User $user): array
+    public function findOngoingEvaluations(User $user): array
     {
         // Requête de toutes les évaluations ou l'utilisateur a une copie
         $subQb = $this->createQueryBuilder('e1')
@@ -62,9 +62,10 @@ class EvaluationRepository extends ServiceEntityRepository
          * où l'identifiant de l'évaluation n'est pas dans la requête précédente
          * (cela signifie que nous récupérons toutes les évaluations sans copie d'étudiant).
          */
-        return $qb->leftjoin('e.studentCopies', 'sc')
-            ->andWhere('e.formation = :formation')
-            ->setParameter('formation', $formation)
+        return $qb->innerJoin('e.formation', 'f')
+            ->innerJoin('f.users', 'u')
+            ->andWhere('u.id = :id')
+            ->setParameter('id', $user->getId())
             ->andWhere($qb->expr()->notIn('e.id', $subQb->getDQL()))
             ->setParameter('user', $user)
             ->andWhere('e.endsAt > :date')
@@ -75,7 +76,7 @@ class EvaluationRepository extends ServiceEntityRepository
     }
 
 
-    public function findUpcomingEvaluations()
+//    public function findUpcomingEvaluations()
 //    /**
 //     * @return Evaluation[] Returns an array of Evaluation objects
 //     */
