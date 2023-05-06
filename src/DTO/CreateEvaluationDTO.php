@@ -1,9 +1,9 @@
 <?php
 
 namespace App\DTO;
+
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints\Callback;
-use Symfony\Component\Validator\Constraints\DateTime;
 use Symfony\Component\Validator\Constraints\Type;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
@@ -26,7 +26,8 @@ class CreateEvaluationDTO
     private ?\DateTimeImmutable $updatedAt = null;
 
     #[Callback]
-    public function validateDateTime(ExecutionContextInterface $context) {
+    public function validateDateTime(ExecutionContextInterface $context)
+    {
         if ($this->startsAt < new \DateTimeImmutable()) {
             $context->buildViolation("The start date must be anterior to today's date.")
                 ->atPath('startsAt')
@@ -39,5 +40,4 @@ class CreateEvaluationDTO
                 ->addViolation();
         }
     }
-
 }

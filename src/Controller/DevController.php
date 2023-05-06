@@ -22,7 +22,7 @@ class DevController extends AbstractController
         $user->setName('michele')
             ->setEmail('michele.florio@ufa47.org.fr')
             ->setSurname('Florio')
-            ->setRoles(["ROLE_ELEVE"]);
+            ->setRoles(['ROLE_ELEVE']);
 
         $user->setPassword($hasher->hashPassword($user, 'password'));
 

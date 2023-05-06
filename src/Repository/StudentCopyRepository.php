@@ -41,17 +41,17 @@ class StudentCopyRepository extends ServiceEntityRepository
     }
 
         public function findLastGradedCopy(User $user): ?StudentCopy
-    {
-        return $this->createQueryBuilder('s')
-            ->andWhere('s.student = :val')
-            ->setParameter('val', $user->getId())
-            ->andWhere('s.score IS NOT NULL')
-            ->orderBy('s.createdAt', 'DESC')
-            ->setMaxResults(1)
-            ->getQuery()
-            ->getOneOrNullResult()
+        {
+            return $this->createQueryBuilder('s')
+                ->andWhere('s.student = :val')
+                ->setParameter('val', $user->getId())
+                ->andWhere('s.score IS NOT NULL')
+                ->orderBy('s.createdAt', 'DESC')
+                ->setMaxResults(1)
+                ->getQuery()
+                ->getOneOrNullResult()
             ;
-    }
+        }
 
 //    /**
 //     * @return StudentCopy[] Returns an array of StudentCopy objects

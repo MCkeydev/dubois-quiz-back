@@ -18,7 +18,8 @@ class CreateStudentAnswerDTO
     public ?int $choice = null;    // Id of the QCM choice (Answer Entity)
 
     #[Callback]
-    public function validate(ExecutionContextInterface $context) {
+    public function validate(ExecutionContextInterface $context)
+    {
         if (null !== $this->answer && null !== $this->choice) {
             $context->buildViolation('You can not specify both an answer and a choice')
                 ->atPath('answer')

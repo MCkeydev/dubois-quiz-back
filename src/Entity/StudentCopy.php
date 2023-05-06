@@ -2,7 +2,6 @@
 
 namespace App\Entity;
 
-use App\Interfaces\EntityInterface;
 use App\Interfaces\OwnedEntityInterface;
 use App\Repository\StudentCopyRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -137,18 +136,6 @@ class StudentCopy implements OwnedEntityInterface
     public function setStudent(?User $student): self
     {
         $this->student = $student;
-
-        return $this;
-    }
-
-    public function getProfessor(): ?User
-    {
-        return $this->professor;
-    }
-
-    public function setProfessor(?User $professor): self
-    {
-        $this->professor = $professor;
 
         return $this;
     }

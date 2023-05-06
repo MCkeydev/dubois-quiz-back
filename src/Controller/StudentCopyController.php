@@ -12,12 +12,8 @@ use App\Entity\StudentAnswer;
 use App\Entity\StudentCopy;
 use App\Entity\User;
 use App\Service\ApiRequestValidator;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Criteria;
-use Doctrine\Common\Collections\ExpressionBuilder;
 use Doctrine\Common\Collections\ReadableCollection;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\HttpFoundation\Exception\JsonException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -25,20 +21,21 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
-use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
-use function Symfony\Component\DependencyInjection\Loader\Configurator\expr;
 
+/**
+ * Class controlleur de gestion de copies élève (création, correction).
+ */
 class StudentCopyController extends AbstractApiController
 {
     /**
-     * Route to submitStudentCopy, and create all the student answers
+     * Route pour créer la copie, et créer toutes les réponses soumises par l'élève.
      */
     #[
         Route(
-            "/api/evaluation/{id}/studentCopy/submit",
-            name: "app_student_copy_submit",
-            methods: ["POST"]
+            '/api/evaluation/{id}/studentCopy/submit',
+            name: 'app_student_copy_submit',
+            methods: ['POST']
         )
     ]
     public function submitStudentCopy(
@@ -48,7 +45,7 @@ class StudentCopyController extends AbstractApiController
         EntityManagerInterface $entityManager,
         ApiRequestValidator $apiRequestValidator,
         ValidatorInterface $validator
-    ) {
+    ): JsonResponse|Response {
         // Before any further processing, we must make sure that the user is allowed on the evaluation
         // Fetches all the formations allowed on the evaluation
         $formation = $evaluation->getFormation();
@@ -68,7 +65,7 @@ class StudentCopyController extends AbstractApiController
 
         $dtoArray = [];
 
-        /**
+        /*
          * Validates each of the request's array elements to match the DTO
          * Now that we have an array of DTO's, we want to make sure that the question is in fact,
          * related to the evaluation.
@@ -85,7 +82,7 @@ class StudentCopyController extends AbstractApiController
         // If the student copy already exists we use it, otherwise we create it
         $studentCopy = $entityManager
             ->getRepository(StudentCopy::class)
-            ->findOneBy(["student" => $user, "evaluation" => $evaluation]);
+            ->findOneBy(['student' => $user, 'evaluation' => $evaluation]);
 
         // If no studentCopy was found, we create one
         if (null === $studentCopy) {
@@ -159,18 +156,18 @@ class StudentCopyController extends AbstractApiController
 
         return $this->json(
             $studentCopy,
-            context: ["groups" => "fetchStudentCopy"]
+            context: ['groups' => 'fetchStudentCopy']
         );
     }
 
     /**
      * Calculates the average score of an evaluation.
      *
-     * @param EntityManagerInterface $entityManager
-     * @param StudentCopy $copy
-     * @return bool
+     * @param ReadableCollection $gradedCopies // Copies notées
+     *
+     * @return int // La note moyenne de toutes les copies
      */
-    private function avegareCopyScore(ReadableCollection $gradedCopies): bool
+    private function avegareCopyScore(ReadableCollection $gradedCopies): int
     {
         $average = 0;
         /**
@@ -184,10 +181,9 @@ class StudentCopyController extends AbstractApiController
     }
 
     /**
-     * Computes the position of each copy, and sets it
+     * Computes the position of each copy, and sets it.
      *
      * @param ReadableCollection $gradedCopies Collection of copies with a non-null score
-     * @return void
      */
     private function computeBillboard(ReadableCollection $gradedCopies): void
     {
@@ -200,7 +196,7 @@ class StudentCopyController extends AbstractApiController
         });
 
         // Sets the position as the copy index + 1
-        /**
+        /*
          * @var StudentCopy $value
          */
         foreach ($copies as $index => $copy) {
@@ -209,20 +205,15 @@ class StudentCopyController extends AbstractApiController
     }
 
     /**
-     * Entry point for teachers to grade student copies
+     * Route pour que les professeurs puissent corriger une copie d'un élève.
      *
-     * @param Request $request
      * @param User $user
-     * @param StudentCopy $studentCopy
-     * @param EntityManagerInterface $entityManager
-     * @param ApiRequestValidator $apiRequestValidator
-     * @return Response
      */
     #[
         Route(
-            "/api/evaluation/studentCopy/{id}/grade",
-            name: "app_student_copy_grade",
-            methods: ["PUT"]
+            '/api/evaluation/studentCopy/{id}/grade',
+            name: 'app_student_copy_grade',
+            methods: ['PUT']
         )
     ]
     public function gradeStudentCopy(
@@ -233,10 +224,8 @@ class StudentCopyController extends AbstractApiController
         EntityManagerInterface $entityManager,
         ApiRequestValidator $apiRequestValidator
     ): Response {
-        // TODO: Make this safe
-
         // Assures que l'utilisateur est bien l'auteur de l'évaluation
-        $this->denyAccessUnlessGranted("ROLE_FORMATEUR");
+        $this->denyAccessUnlessGranted('ROLE_FORMATEUR');
         $this->isAllowedOnRessource($studentCopy->getEvaluation(), $user);
 
         // Validation du contenu de la requête
@@ -245,7 +234,7 @@ class StudentCopyController extends AbstractApiController
             GradeCopyDTO::class
         );
 
-        /**
+        /*
          * Nous savons que le DTO possède bien un commentaire et un tableau,
          * maintenant il faut vérifier le contenu du tableau
          */
@@ -253,7 +242,7 @@ class StudentCopyController extends AbstractApiController
          * @var GradeCopyDTO $dto
          */
         foreach ($dto->answers as $_ => $value) {
-            // Nous validons chaque réponse corrigée par le correcteur
+            // Nous validons chaque réponse corrigée envoyée par le correcteur
             $answer = $apiRequestValidator->checkRequestValidity(
                 json_encode($value),
                 GradeStudentAnswerDTO::class
@@ -263,8 +252,8 @@ class StudentCopyController extends AbstractApiController
             $studentAnswer = $entityManager
                 ->getRepository(StudentAnswer::class)
                 ->findOneBy([
-                    "studentCopy" => $studentCopy,
-                    "id" => $answer->answerId,
+                    'studentCopy' => $studentCopy,
+                    'id' => $answer->answerId,
                 ]);
 
             if (null !== $studentAnswer) {
@@ -310,7 +299,7 @@ class StudentCopyController extends AbstractApiController
         $gradedCopies = $evaluation
             ->getStudentCopies()
             ->filter(function (StudentCopy $copy) {
-                return $copy->getScore() !== null;
+                return null !== $copy->getScore();
             });
 
         // Sets the Evaluation's average score
@@ -322,25 +311,23 @@ class StudentCopyController extends AbstractApiController
 
         return $this->json(
             $studentCopy,
-            context: ["groups" => ["fetchStudentCopyPreview"]]
+            context: ['groups' => ['fetchStudentCopyPreview']]
         );
     }
 
     /**
      * Entry point to get the preview of a studentCopy
-     * (placement, grade, class average score, formation, quizz)
-     * @param int $id
+     * (placement, grade, class average score, formation, quizz).
+     *
      * @param User $user
-     * @param EntityManagerInterface $entityManager
-     * @param NormalizerInterface $normalizer
-     * @return JsonResponse|Response
+     *
      * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
      */
     #[
         Route(
-            "/api/evaluation/{id}/studentCopy/preview",
-            name: "app_student_copy_get",
-            methods: ["GET"]
+            '/api/evaluation/{id}/studentCopy/preview',
+            name: 'app_student_copy_get',
+            methods: ['GET']
         )
     ]
     public function getStudentCopyPreview(
@@ -351,10 +338,10 @@ class StudentCopyController extends AbstractApiController
     ): JsonResponse|Response {
         $studentCopy = $entityManager
             ->getRepository(StudentCopy::class)
-            ->findOneBy(["student" => $user->getId(), "evaluation" => $id]);
+            ->findOneBy(['student' => $user->getId(), 'evaluation' => $id]);
 
         if (null === $studentCopy) {
-            return new Response("Entity not found", Response::HTTP_NOT_FOUND);
+            return new Response('Entity not found', Response::HTTP_NOT_FOUND);
         }
 
         // Creates an associative array with all the requested data
@@ -363,9 +350,9 @@ class StudentCopyController extends AbstractApiController
 
     #[
         Route(
-            "/api/evaluation/studentCopy/preview/last",
-            name: "app_student_last_copy_preview",
-            methods: ["GET"]
+            '/api/evaluation/studentCopy/preview/last',
+            name: 'app_student_last_copy_preview',
+            methods: ['GET']
         )
     ]
     public function getLastStudentCopyPreview(
@@ -386,9 +373,6 @@ class StudentCopyController extends AbstractApiController
     }
 
     /**
-     * @param NormalizerInterface $normalizer
-     * @param StudentCopy|null $studentCopy
-     * @return JsonResponse
      * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
      */
     private function createsStudentCopyPreview(
@@ -396,29 +380,29 @@ class StudentCopyController extends AbstractApiController
         ?StudentCopy $studentCopy
     ): JsonResponse {
         $responseData = [
-            "studentCopy" => $normalizer->normalize(
+            'studentCopy' => $normalizer->normalize(
                 $studentCopy,
-                context: ["groups" => "fetchStudentCopyPreview"]
+                context: ['groups' => 'fetchStudentCopyPreview']
             ),
         ];
 
         $evaluation = $studentCopy->getEvaluation();
 
-        $responseData["formation"] = $normalizer->normalize(
+        $responseData['formation'] = $normalizer->normalize(
             $evaluation->getFormation(),
-            context: ["groups" => "api"]
+            context: ['groups' => 'api']
         );
-        $responseData["evaluation"] = $normalizer->normalize(
+        $responseData['evaluation'] = $normalizer->normalize(
             $evaluation,
-            context: ["groups" => "api"]
+            context: ['groups' => 'api']
         );
-        $responseData["evaluation"]["maxScore"] = $evaluation
+        $responseData['evaluation']['maxScore'] = $evaluation
             ->getQuiz()
             ->getQuestions()
             ->reduce(function (int $accumulator, Question $question): int {
                 return $accumulator + $question->getMaxScore();
             }, 0);
-        $responseData["evaluation"]["copyCount"] = $evaluation
+        $responseData['evaluation']['copyCount'] = $evaluation
             ->getStudentCopies()
             ->count();
 

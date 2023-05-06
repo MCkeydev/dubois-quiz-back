@@ -19,11 +19,11 @@ class AnswerController extends AbstractApiController
 {
     #[Route('/api/question/{id}/answer', name: 'app_answer_answer', methods: ['POST'])]
     public function createAnswer(
-                                 #[CurrentUser] $user,
-                                 Request $request,
-                                 Question $question,
-                                 ApiRequestValidator $apiRequestValidator,
-                                 EntityManagerInterface $entityManager): Response
+        #[CurrentUser] $user,
+        Request $request,
+        Question $question,
+        ApiRequestValidator $apiRequestValidator,
+        EntityManagerInterface $entityManager): Response
     {
         // Checks if the user is allowed to modify this ressource.
         $this->isAllowedOnRessource($question->getQuiz(), $user);
@@ -44,7 +44,7 @@ class AnswerController extends AbstractApiController
         // Persist all changes to database.
         $entityManager->flush();
 
-        return $this->json($dto, context: [ 'groups' => 'api' ]);
+        return $this->json($dto, context: ['groups' => 'api']);
     }
 
     #[Route('/api/answer/{id}', name: 'app_answer_update', methods: ['PATCH'])]
@@ -55,8 +55,7 @@ class AnswerController extends AbstractApiController
         SerializerInterface $serializer,
         ApiRequestValidator $apiRequestValidator,
         EntityManagerInterface $entityManager,
-    ): JsonResponse
-    {
+    ): JsonResponse {
         // Checks if the user is allowed to modify this ressource.
         $this->isAllowedOnRessource($answer->getQuestion()->getQuiz(), $user);
 
@@ -66,7 +65,7 @@ class AnswerController extends AbstractApiController
         // We fetch the content in an associative array form.
         $requestContent = json_decode($request->getContent(), true);
 
-        /**
+        /*
          * For each entry in the request body, check if such property exist in object,
          * and if it does, replace its content.
          */
@@ -75,7 +74,7 @@ class AnswerController extends AbstractApiController
         // Since validation was made in checkRequestValidity, we can persist without revalidating.
         $entityManager->flush();
 
-        return new JsonResponse($serializer->serialize($answer->getQuestion(), 'json', context: [ 'groups' => 'api' ]), Response::HTTP_OK);
+        return new JsonResponse($serializer->serialize($answer->getQuestion(), 'json', context: ['groups' => 'api']), Response::HTTP_OK);
     }
 
     #[Route('/api/answer/{id}', name: 'app_quiz_deleteanswer', methods: ['DELETE'])]
@@ -83,8 +82,7 @@ class AnswerController extends AbstractApiController
         #[CurrentUser] $user,
         Answer $answer,
         EntityManagerInterface $entityManager,
-    ): JsonResponse
-    {
+    ): JsonResponse {
         // Checks if the user is allowed to modify this ressource.
         $this->isAllowedOnRessource($answer->getQuestion()->getQuiz(), $user);
 

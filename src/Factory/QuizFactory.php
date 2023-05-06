@@ -11,21 +11,21 @@ use Zenstruck\Foundry\RepositoryProxy;
 /**
  * @extends ModelFactory<Quiz>
  *
- * @method        Quiz|Proxy create(array|callable $attributes = [])
- * @method static Quiz|Proxy createOne(array $attributes = [])
- * @method static Quiz|Proxy find(object|array|mixed $criteria)
- * @method static Quiz|Proxy findOrCreate(array $attributes)
- * @method static Quiz|Proxy first(string $sortedField = 'id')
- * @method static Quiz|Proxy last(string $sortedField = 'id')
- * @method static Quiz|Proxy random(array $attributes = [])
- * @method static Quiz|Proxy randomOrCreate(array $attributes = [])
+ * @method        Quiz|Proxy                     create(array|callable $attributes = [])
+ * @method static Quiz|Proxy                     createOne(array $attributes = [])
+ * @method static Quiz|Proxy                     find(object|array|mixed $criteria)
+ * @method static Quiz|Proxy                     findOrCreate(array $attributes)
+ * @method static Quiz|Proxy                     first(string $sortedField = 'id')
+ * @method static Quiz|Proxy                     last(string $sortedField = 'id')
+ * @method static Quiz|Proxy                     random(array $attributes = [])
+ * @method static Quiz|Proxy                     randomOrCreate(array $attributes = [])
  * @method static QuizRepository|RepositoryProxy repository()
- * @method static Quiz[]|Proxy[] all()
- * @method static Quiz[]|Proxy[] createMany(int $number, array|callable $attributes = [])
- * @method static Quiz[]|Proxy[] createSequence(iterable|callable $sequence)
- * @method static Quiz[]|Proxy[] findBy(array $attributes)
- * @method static Quiz[]|Proxy[] randomRange(int $min, int $max, array $attributes = [])
- * @method static Quiz[]|Proxy[] randomSet(int $number, array $attributes = [])
+ * @method static Quiz[]|Proxy[]                 all()
+ * @method static Quiz[]|Proxy[]                 createMany(int $number, array|callable $attributes = [])
+ * @method static Quiz[]|Proxy[]                 createSequence(iterable|callable $sequence)
+ * @method static Quiz[]|Proxy[]                 findBy(array $attributes)
+ * @method static Quiz[]|Proxy[]                 randomRange(int $min, int $max, array $attributes = [])
+ * @method static Quiz[]|Proxy[]                 randomSet(int $number, array $attributes = [])
  */
 final class QuizFactory extends ModelFactory
 {

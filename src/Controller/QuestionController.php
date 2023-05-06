@@ -17,15 +17,11 @@ use Symfony\Component\Validator\ConstraintViolationList;
 
 class QuestionController extends AbstractApiController
 {
-
     /**
      * This route is meant to create a question entity, and its answer.
      *
-     * @param Quiz $quiz
      * @param User $user
-     * @param Request $request
-     * @param ApiRequestValidator $apiRequestValidator
-     * @param EntityManagerInterface $entityManager
+     *
      * @return JsonResponse
      */
     #[Route('/api/quiz/{id}/question', name: 'app_quiz_createquestion', methods: ['POST'])]
@@ -34,8 +30,7 @@ class QuestionController extends AbstractApiController
         Request $request,
         ApiRequestValidator $apiRequestValidator,
         EntityManagerInterface $entityManager,
-    )
-    {
+    ) {
         // TODO: Make this route owner safe
         $dto = $apiRequestValidator->checkRequestValidity($request, Question::class);
 
@@ -48,19 +43,13 @@ class QuestionController extends AbstractApiController
         $quiz->addQuestion($dto);
         $entityManager->flush();
 
-        return $this->json($dto, context: [ 'groups' => 'api' ]);
+        return $this->json($dto, context: ['groups' => 'api']);
     }
-
 
     /**
      * This route is meant to modify a function.
+     *
      * @param User|null $user
-     * @param Question $question
-     * @param Request $request
-     * @param ApiRequestValidator $apiRequestValidator
-     * @param EntityManagerInterface $entityManager
-     * @param SerializerInterface $serializer
-     * @return JsonResponse
      */
     #[Route('/api/question/{id}', name: 'app_question_update', methods: ['PATCH'])]
     public function modifyQuestion(
@@ -70,8 +59,7 @@ class QuestionController extends AbstractApiController
         ApiRequestValidator $apiRequestValidator,
         EntityManagerInterface $entityManager,
         SerializerInterface $serializer,
-    ): JsonResponse
-    {
+    ): JsonResponse {
         // Checks if the user is the owner of the quizz
         $this->isAllowedOnRessource($question, $user);
 
@@ -80,7 +68,7 @@ class QuestionController extends AbstractApiController
         // If the user is allowed, we need to validate the request
         $requestContent = json_decode($request->getContent(), true);
 
-        /**
+        /*
          * For each entry in the request body, check if such property exist in object,
          * and if it does, replace its content.
          */
@@ -89,7 +77,7 @@ class QuestionController extends AbstractApiController
         // Since validation was made in checkRequestValidity, we can persist without revalidating
         $entityManager->flush();
 
-        return new JsonResponse($serializer->serialize($question, 'json', context: [ 'groups' => 'api' ]), Response::HTTP_OK);
+        return new JsonResponse($serializer->serialize($question, 'json', context: ['groups' => 'api']), Response::HTTP_OK);
     }
 
     #[Route('/api/question/{id}', name: 'app_question_deletequestion', methods: ['DELETE'])]

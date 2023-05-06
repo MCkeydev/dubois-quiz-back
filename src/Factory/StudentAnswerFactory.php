@@ -11,21 +11,21 @@ use Zenstruck\Foundry\RepositoryProxy;
 /**
  * @extends ModelFactory<StudentAnswer>
  *
- * @method        StudentAnswer|Proxy create(array|callable $attributes = [])
- * @method static StudentAnswer|Proxy createOne(array $attributes = [])
- * @method static StudentAnswer|Proxy find(object|array|mixed $criteria)
- * @method static StudentAnswer|Proxy findOrCreate(array $attributes)
- * @method static StudentAnswer|Proxy first(string $sortedField = 'id')
- * @method static StudentAnswer|Proxy last(string $sortedField = 'id')
- * @method static StudentAnswer|Proxy random(array $attributes = [])
- * @method static StudentAnswer|Proxy randomOrCreate(array $attributes = [])
+ * @method        StudentAnswer|Proxy                     create(array|callable $attributes = [])
+ * @method static StudentAnswer|Proxy                     createOne(array $attributes = [])
+ * @method static StudentAnswer|Proxy                     find(object|array|mixed $criteria)
+ * @method static StudentAnswer|Proxy                     findOrCreate(array $attributes)
+ * @method static StudentAnswer|Proxy                     first(string $sortedField = 'id')
+ * @method static StudentAnswer|Proxy                     last(string $sortedField = 'id')
+ * @method static StudentAnswer|Proxy                     random(array $attributes = [])
+ * @method static StudentAnswer|Proxy                     randomOrCreate(array $attributes = [])
  * @method static StudentAnswerRepository|RepositoryProxy repository()
- * @method static StudentAnswer[]|Proxy[] all()
- * @method static StudentAnswer[]|Proxy[] createMany(int $number, array|callable $attributes = [])
- * @method static StudentAnswer[]|Proxy[] createSequence(iterable|callable $sequence)
- * @method static StudentAnswer[]|Proxy[] findBy(array $attributes)
- * @method static StudentAnswer[]|Proxy[] randomRange(int $min, int $max, array $attributes = [])
- * @method static StudentAnswer[]|Proxy[] randomSet(int $number, array $attributes = [])
+ * @method static StudentAnswer[]|Proxy[]                 all()
+ * @method static StudentAnswer[]|Proxy[]                 createMany(int $number, array|callable $attributes = [])
+ * @method static StudentAnswer[]|Proxy[]                 createSequence(iterable|callable $sequence)
+ * @method static StudentAnswer[]|Proxy[]                 findBy(array $attributes)
+ * @method static StudentAnswer[]|Proxy[]                 randomRange(int $min, int $max, array $attributes = [])
+ * @method static StudentAnswer[]|Proxy[]                 randomSet(int $number, array $attributes = [])
  */
 final class StudentAnswerFactory extends ModelFactory
 {

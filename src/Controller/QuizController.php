@@ -19,12 +19,11 @@ class QuizController extends AbstractApiController
 {
     #[Route('/api/quiz', name: 'app_quiz', methods: ['POST'])]
     public function createQuiz(
-                                #[CurrentUser] User $user,
-                               Request $request,
-                               ApiRequestValidator $apiRequestValidator,
-                                EntityManagerInterface $entityManager,
-                              ): JsonResponse
-    {
+        #[CurrentUser] User $user,
+        Request $request,
+        ApiRequestValidator $apiRequestValidator,
+        EntityManagerInterface $entityManager,
+    ): JsonResponse {
         $dto = $apiRequestValidator->checkRequestValidity($request, Quiz::class);
 
         if ($dto instanceof ConstraintViolationList) {
@@ -47,8 +46,7 @@ class QuizController extends AbstractApiController
         SerializerInterface $serializer,
         ApiRequestValidator $apiRequestValidator,
         EntityManagerInterface $entityManager,
-    ): JsonResponse
-    {
+    ): JsonResponse {
         // Checks if the user is the owner of the quizz
         $this->isAllowedOnRessource($quiz, $user);
 
@@ -57,7 +55,7 @@ class QuizController extends AbstractApiController
         // If the user is allowed, we need to validate the request
         $requestContent = json_decode($request->getContent(), true);
 
-        /**
+        /*
          * For each entry in the request body, check if such property exist in object,
          * and if it does, replace its content.
          */
@@ -66,7 +64,7 @@ class QuizController extends AbstractApiController
         // Since validation was made in checkRequestValidity, we can persist without revalidating
         $entityManager->flush();
 
-        return new JsonResponse($serializer->serialize($quiz, 'json', context: [ 'groups' => 'api' ]), Response::HTTP_OK);
+        return new JsonResponse($serializer->serialize($quiz, 'json', context: ['groups' => 'api']), Response::HTTP_OK);
     }
 
     #[Route('/api/quiz/{id}', name: 'app_quiz_deletequiz', methods: ['DELETE'])]
@@ -74,8 +72,7 @@ class QuizController extends AbstractApiController
         #[CurrentUser] User $user,
         Quiz $quiz,
         EntityManagerInterface $entityManager,
-    ): JsonResponse
-    {
+    ): JsonResponse {
         // Checks if the user is the owner of the quizz
         $this->isAllowedOnRessource($quiz, $user);
 
@@ -84,5 +81,4 @@ class QuizController extends AbstractApiController
 
         return $this->json('Entity sucessfully removed');
     }
-
 }

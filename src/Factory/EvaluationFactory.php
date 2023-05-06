@@ -4,7 +4,6 @@ namespace App\Factory;
 
 use App\Entity\Evaluation;
 use App\Repository\EvaluationRepository;
-use Doctrine\DBAL\Types\DateImmutableType;
 use Zenstruck\Foundry\ModelFactory;
 use Zenstruck\Foundry\Proxy;
 use Zenstruck\Foundry\RepositoryProxy;
@@ -12,21 +11,21 @@ use Zenstruck\Foundry\RepositoryProxy;
 /**
  * @extends ModelFactory<Evaluation>
  *
- * @method        Evaluation|Proxy create(array|callable $attributes = [])
- * @method static Evaluation|Proxy createOne(array $attributes = [])
- * @method static Evaluation|Proxy find(object|array|mixed $criteria)
- * @method static Evaluation|Proxy findOrCreate(array $attributes)
- * @method static Evaluation|Proxy first(string $sortedField = 'id')
- * @method static Evaluation|Proxy last(string $sortedField = 'id')
- * @method static Evaluation|Proxy random(array $attributes = [])
- * @method static Evaluation|Proxy randomOrCreate(array $attributes = [])
+ * @method        Evaluation|Proxy                     create(array|callable $attributes = [])
+ * @method static Evaluation|Proxy                     createOne(array $attributes = [])
+ * @method static Evaluation|Proxy                     find(object|array|mixed $criteria)
+ * @method static Evaluation|Proxy                     findOrCreate(array $attributes)
+ * @method static Evaluation|Proxy                     first(string $sortedField = 'id')
+ * @method static Evaluation|Proxy                     last(string $sortedField = 'id')
+ * @method static Evaluation|Proxy                     random(array $attributes = [])
+ * @method static Evaluation|Proxy                     randomOrCreate(array $attributes = [])
  * @method static EvaluationRepository|RepositoryProxy repository()
- * @method static Evaluation[]|Proxy[] all()
- * @method static Evaluation[]|Proxy[] createMany(int $number, array|callable $attributes = [])
- * @method static Evaluation[]|Proxy[] createSequence(iterable|callable $sequence)
- * @method static Evaluation[]|Proxy[] findBy(array $attributes)
- * @method static Evaluation[]|Proxy[] randomRange(int $min, int $max, array $attributes = [])
- * @method static Evaluation[]|Proxy[] randomSet(int $number, array $attributes = [])
+ * @method static Evaluation[]|Proxy[]                 all()
+ * @method static Evaluation[]|Proxy[]                 createMany(int $number, array|callable $attributes = [])
+ * @method static Evaluation[]|Proxy[]                 createSequence(iterable|callable $sequence)
+ * @method static Evaluation[]|Proxy[]                 findBy(array $attributes)
+ * @method static Evaluation[]|Proxy[]                 randomRange(int $min, int $max, array $attributes = [])
+ * @method static Evaluation[]|Proxy[]                 randomSet(int $number, array $attributes = [])
  */
 final class EvaluationFactory extends ModelFactory
 {
@@ -61,9 +60,9 @@ final class EvaluationFactory extends ModelFactory
     protected function initialize(): self
     {
         return $this
-             ->afterInstantiate(function(Evaluation $evaluation): void {
+             ->afterInstantiate(function (Evaluation $evaluation): void {
                  $startDate = new \DateTimeImmutable('now');
-                 $endDate = $startDate->add(\DateInterval::createFromDateString( strval(random_int(1, 7)) . 'day'));
+                 $endDate = $startDate->add(\DateInterval::createFromDateString(strval(random_int(1, 7)).'day'));
 
                  $evaluation->setStartsAt($startDate);
                  $evaluation->setEndsAt($endDate);

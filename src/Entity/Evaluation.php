@@ -71,7 +71,8 @@ class Evaluation implements OwnedEntityInterface
     private ?int $averageScore = null;
 
     #[Callback]
-    public function validateDateTime(ExecutionContextInterface $context) {
+    public function validateDateTime(ExecutionContextInterface $context)
+    {
         if ($this->getStartsAt() > $this->getEndsAt()) {
             $context->buildViolation('The start date must be anterior to the ends date.')
                 ->atPath('startsAt')
@@ -119,7 +120,7 @@ class Evaluation implements OwnedEntityInterface
     {
         if ($startsAt instanceof \DateTimeImmutable) {
             $this->startsAt = $startsAt;
-        } else if (is_string($startsAt)) {
+        } elseif (is_string($startsAt)) {
             $this->startsAt = new \DateTimeImmutable($startsAt);
         }
 
@@ -135,7 +136,7 @@ class Evaluation implements OwnedEntityInterface
     {
         if ($endsAt instanceof \DateTimeImmutable) {
             $this->endsAt = $endsAt;
-        } else if (is_string($endsAt)) {
+        } elseif (is_string($endsAt)) {
             $this->endsAt = new \DateTimeImmutable($endsAt);
         }
 
@@ -243,5 +244,4 @@ class Evaluation implements OwnedEntityInterface
 
         return $this;
     }
-
 }

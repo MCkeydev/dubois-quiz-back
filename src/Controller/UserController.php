@@ -15,7 +15,7 @@ class UserController extends AbstractController
     public function index(#[CurrentUser] User $user): Response
     {
         if (!$user) {
-            throw new AccessDeniedException("No user found.");
+            throw new AccessDeniedException('No user found.');
         }
 
         return $this->json($user, 200, context: ['groups' => 'getUser']);
