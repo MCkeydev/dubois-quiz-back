@@ -14,7 +14,6 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -43,8 +42,7 @@ class EvaluationController extends AbstractApiController
         ApiRequestValidator $apiRequestValidator,
         EntityManagerInterface $entityManager,
         SerializerInterface $serializer,
-    ): Response
-    {
+    ): Response {
         // TODO: Make this in access control
         $this->denyAccessUnlessGranted('ROLE_FORMATEUR');
 
@@ -71,8 +69,7 @@ class EvaluationController extends AbstractApiController
         ApiRequestValidator $apiRequestValidator,
         EntityManagerInterface $entityManager,
         SerializerInterface $serializer,
-    ): JsonResponse
-    {
+    ): JsonResponse {
         // Checks if the user is the owner of the quiz
         $this->isAllowedOnRessource($evaluation, $user);
 
@@ -93,16 +90,15 @@ class EvaluationController extends AbstractApiController
         // Since validation was made in checkRequestValidity, we can persist without revalidating
         $entityManager->flush();
 
-        return new JsonResponse($serializer->serialize($evaluation, 'json', context: [ 'groups' => 'getEvaluation' ]), Response::HTTP_OK);
+        return new JsonResponse($serializer->serialize($evaluation, 'json', context: ['groups' => 'getEvaluation']), Response::HTTP_OK);
     }
 
     #[Route('/api/evaluation/{id}', name: 'app_evaluation_delete', methods: ['DELETE'])]
-    public function deleteEvaluation (
+    public function deleteEvaluation(
         #[CurrentUser] $user,
         Evaluation $evaluation,
         EntityManagerInterface $entityManager,
-    )
-    {
+    ) {
         // Checks if the user is the owner of the quizz
         $this->isAllowedOnRessource($evaluation, $user);
 

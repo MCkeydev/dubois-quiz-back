@@ -2,7 +2,6 @@
 
 namespace App\Entity;
 
-use App\Interfaces\EntityInterface;
 use App\Interfaces\OwnedEntityInterface;
 use App\Repository\StudentCopyRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -40,10 +39,6 @@ class StudentCopy implements OwnedEntityInterface
     #[ORM\JoinColumn(nullable: false)]
     private ?User $student = null;
 
-    #[ORM\ManyToOne(inversedBy: 'professorCopies')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?User $professor = null;
-
     #[ORM\ManyToOne(inversedBy: 'studentCopies')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Evaluation $evaluation = null;
@@ -66,6 +61,7 @@ class StudentCopy implements OwnedEntityInterface
     {
         $this->canShare = false;
         $this->studentAnswers = new ArrayCollection();
+        $this->createdAt = new \DateTimeImmutable();
     }
 
     public function isOwner(User $user): bool
@@ -140,18 +136,6 @@ class StudentCopy implements OwnedEntityInterface
     public function setStudent(?User $student): self
     {
         $this->student = $student;
-
-        return $this;
-    }
-
-    public function getProfessor(): ?User
-    {
-        return $this->professor;
-    }
-
-    public function setProfessor(?User $professor): self
-    {
-        $this->professor = $professor;
 
         return $this;
     }

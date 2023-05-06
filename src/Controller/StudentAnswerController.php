@@ -28,28 +28,21 @@ class StudentAnswerController extends AbstractApiController
      * This route's purpose is to create Text answers to a question.
      * Multiple choice questions canno't be answered here.
      *
-     * @param User $user
-     * @param Request $request
-     * @param StudentCopy $studentCopy
+     * @param User     $user
      * @param Question $question
-     * @param ApiRequestValidator $apiRequestValidator
-     * @param EntityManagerInterface $entityManager
-     * @param ValidatorInterface $validator
-     * @return Response
      */
     #[Route('/api/studentCopy/{id}/question/{question_id}/answers', name: 'app_student_answer_text', methods: ['POST'])]
     public function createTextAnswer(
-                            #[CurrentUser] User $user,
-                            Request $request,
-                            StudentCopy $studentCopy,
-                            #[MapEntity(expr: 'repository.find(question_id)')]
-                            Question $question,
-                            ApiRequestValidator $apiRequestValidator,
-                            EntityManagerInterface $entityManager,
-                            ValidatorInterface $validator,
-                            SerializerInterface $serializer,
-    ): Response
-    {
+        #[CurrentUser] User $user,
+        Request $request,
+        StudentCopy $studentCopy,
+        #[MapEntity(expr: 'repository.find(question_id)')]
+        Question $question,
+        ApiRequestValidator $apiRequestValidator,
+        EntityManagerInterface $entityManager,
+        ValidatorInterface $validator,
+        SerializerInterface $serializer,
+    ): Response {
         // Only students can add answers to their copies.
         if ($studentCopy->getStudent() !== $user) {
             throw new AccessDeniedException();
@@ -80,7 +73,7 @@ class StudentAnswerController extends AbstractApiController
         $entityManager->persist($studentAnswer);
         $entityManager->flush();
 
-        return new JsonResponse($serializer->serialize($studentAnswer, 'json', [ 'groups' => 'fetchAnswer' ]));
+        return new JsonResponse($serializer->serialize($studentAnswer, 'json', ['groups' => 'fetchAnswer']));
     }
 
     #[Route('/api/studentCopy/{id}/question/answers/{answer_id}', name: 'app_student_answer_qcm', methods: ['POST'])]
@@ -91,8 +84,7 @@ class StudentAnswerController extends AbstractApiController
         Answer $answer,
         EntityManagerInterface $entityManager,
         ValidatorInterface $validator,
-    ): Response
-    {
+    ): Response {
         // Only students can add answers to their copies.
         if ($studentCopy->getStudent() !== $user) {
             throw new AccessDeniedException();
@@ -120,7 +112,7 @@ class StudentAnswerController extends AbstractApiController
         $entityManager->persist($studentAnswer);
         $entityManager->flush();
 
-        return $this->json($studentAnswer, context: [ 'groups' => 'fetchAnswer']);
+        return $this->json($studentAnswer, context: ['groups' => 'fetchAnswer']);
     }
 
     public function checkEvaluationAvailable(Evaluation $evaluation)

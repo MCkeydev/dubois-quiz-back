@@ -11,21 +11,21 @@ use Zenstruck\Foundry\RepositoryProxy;
 /**
  * @extends ModelFactory<StudentCopy>
  *
- * @method        StudentCopy|Proxy create(array|callable $attributes = [])
- * @method static StudentCopy|Proxy createOne(array $attributes = [])
- * @method static StudentCopy|Proxy find(object|array|mixed $criteria)
- * @method static StudentCopy|Proxy findOrCreate(array $attributes)
- * @method static StudentCopy|Proxy first(string $sortedField = 'id')
- * @method static StudentCopy|Proxy last(string $sortedField = 'id')
- * @method static StudentCopy|Proxy random(array $attributes = [])
- * @method static StudentCopy|Proxy randomOrCreate(array $attributes = [])
+ * @method        StudentCopy|Proxy                     create(array|callable $attributes = [])
+ * @method static StudentCopy|Proxy                     createOne(array $attributes = [])
+ * @method static StudentCopy|Proxy                     find(object|array|mixed $criteria)
+ * @method static StudentCopy|Proxy                     findOrCreate(array $attributes)
+ * @method static StudentCopy|Proxy                     first(string $sortedField = 'id')
+ * @method static StudentCopy|Proxy                     last(string $sortedField = 'id')
+ * @method static StudentCopy|Proxy                     random(array $attributes = [])
+ * @method static StudentCopy|Proxy                     randomOrCreate(array $attributes = [])
  * @method static StudentCopyRepository|RepositoryProxy repository()
- * @method static StudentCopy[]|Proxy[] all()
- * @method static StudentCopy[]|Proxy[] createMany(int $number, array|callable $attributes = [])
- * @method static StudentCopy[]|Proxy[] createSequence(iterable|callable $sequence)
- * @method static StudentCopy[]|Proxy[] findBy(array $attributes)
- * @method static StudentCopy[]|Proxy[] randomRange(int $min, int $max, array $attributes = [])
- * @method static StudentCopy[]|Proxy[] randomSet(int $number, array $attributes = [])
+ * @method static StudentCopy[]|Proxy[]                 all()
+ * @method static StudentCopy[]|Proxy[]                 createMany(int $number, array|callable $attributes = [])
+ * @method static StudentCopy[]|Proxy[]                 createSequence(iterable|callable $sequence)
+ * @method static StudentCopy[]|Proxy[]                 findBy(array $attributes)
+ * @method static StudentCopy[]|Proxy[]                 randomRange(int $min, int $max, array $attributes = [])
+ * @method static StudentCopy[]|Proxy[]                 randomSet(int $number, array $attributes = [])
  */
 final class StudentCopyFactory extends ModelFactory
 {

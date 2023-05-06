@@ -14,13 +14,11 @@ use Symfony\Component\Serializer\SerializerInterface;
 class FormationController extends AbstractApiController
 {
     #[Route('/api/formation', name: 'app_formation_create', methods: ['POST'])]
-    public function createFormation (Request $request,
-                                    ApiRequestValidator $apiRequestValidator,
-                                    EntityManagerInterface $entityManager,
-                                    SerializerInterface $serializer
-
-    ): Response
-    {
+    public function createFormation(Request $request,
+        ApiRequestValidator $apiRequestValidator,
+        EntityManagerInterface $entityManager,
+        SerializerInterface $serializer
+    ): Response {
         /**
          * @var Formation $formation
          */
@@ -33,22 +31,20 @@ class FormationController extends AbstractApiController
     }
 
     #[Route('/api/formation/{id}', name: 'app_formation_update', methods: ['PATCH'])]
-    public function updateFormation (
+    public function updateFormation(
         Formation $formation,
         Request $request,
         ApiRequestValidator $apiRequestValidator,
         EntityManagerInterface $entityManager,
         SerializerInterface $serializer,
-    ): Response
-    {
-
+    ): Response {
         // Validates the request for type/validation errors.
         $apiRequestValidator->checkRequestValidity($request, Formation::class);
 
         // We fetch the content in an associative array form.
         $requestContent = json_decode($request->getContent(), true);
 
-        /**
+        /*
          * For each entry in the request body, check if such property exist in object,
          * and if it does, replace its content.
          */
@@ -57,12 +53,12 @@ class FormationController extends AbstractApiController
         // Since validation was made in checkRequestValidity, we can persist without revalidating.
         $entityManager->flush();
 
-        return new JsonResponse($serializer->serialize($formation, 'json', context: [ 'groups' => 'api' ]), Response::HTTP_OK);
+        return new JsonResponse($serializer->serialize($formation, 'json', context: ['groups' => 'api']), Response::HTTP_OK);
     }
 
     #[Route('/api/formation/{id}', name: 'app_formation_delete', methods: ['DELETE'])]
-    public function deleteFormation (Formation $formation,
-                                    EntityManagerInterface $entityManager,
+    public function deleteFormation(Formation $formation,
+        EntityManagerInterface $entityManager,
     ) {
         $entityManager->remove($formation);
         $entityManager->flush();

@@ -9,14 +9,13 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\NotNull;
 
-
 #[ORM\Entity(repositoryClass: AnswerRepository::class)]
 class Answer implements EntityInterface
 {
-    #[Groups('api')]
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['getEvaluation', 'api'])]
     private ?int $id = null;
 
     #[NotNull]

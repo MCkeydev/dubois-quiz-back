@@ -11,21 +11,21 @@ use Zenstruck\Foundry\RepositoryProxy;
 /**
  * @extends ModelFactory<Formation>
  *
- * @method        Formation|Proxy create(array|callable $attributes = [])
- * @method static Formation|Proxy createOne(array $attributes = [])
- * @method static Formation|Proxy find(object|array|mixed $criteria)
- * @method static Formation|Proxy findOrCreate(array $attributes)
- * @method static Formation|Proxy first(string $sortedField = 'id')
- * @method static Formation|Proxy last(string $sortedField = 'id')
- * @method static Formation|Proxy random(array $attributes = [])
- * @method static Formation|Proxy randomOrCreate(array $attributes = [])
+ * @method        Formation|Proxy                     create(array|callable $attributes = [])
+ * @method static Formation|Proxy                     createOne(array $attributes = [])
+ * @method static Formation|Proxy                     find(object|array|mixed $criteria)
+ * @method static Formation|Proxy                     findOrCreate(array $attributes)
+ * @method static Formation|Proxy                     first(string $sortedField = 'id')
+ * @method static Formation|Proxy                     last(string $sortedField = 'id')
+ * @method static Formation|Proxy                     random(array $attributes = [])
+ * @method static Formation|Proxy                     randomOrCreate(array $attributes = [])
  * @method static FormationRepository|RepositoryProxy repository()
- * @method static Formation[]|Proxy[] all()
- * @method static Formation[]|Proxy[] createMany(int $number, array|callable $attributes = [])
- * @method static Formation[]|Proxy[] createSequence(iterable|callable $sequence)
- * @method static Formation[]|Proxy[] findBy(array $attributes)
- * @method static Formation[]|Proxy[] randomRange(int $min, int $max, array $attributes = [])
- * @method static Formation[]|Proxy[] randomSet(int $number, array $attributes = [])
+ * @method static Formation[]|Proxy[]                 all()
+ * @method static Formation[]|Proxy[]                 createMany(int $number, array|callable $attributes = [])
+ * @method static Formation[]|Proxy[]                 createSequence(iterable|callable $sequence)
+ * @method static Formation[]|Proxy[]                 findBy(array $attributes)
+ * @method static Formation[]|Proxy[]                 randomRange(int $min, int $max, array $attributes = [])
+ * @method static Formation[]|Proxy[]                 randomSet(int $number, array $attributes = [])
  */
 final class FormationFactory extends ModelFactory
 {

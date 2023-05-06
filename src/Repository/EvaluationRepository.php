@@ -6,7 +6,6 @@ use App\Entity\Evaluation;
 use App\Entity\Formation;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -42,12 +41,15 @@ class EvaluationRepository extends ServiceEntityRepository
         }
     }
 
-        /**
-     * @return Evaluation[] Returns an array of Evaluation objects
+    /**
+     * Cherche dans la table Evaluation toutes les évaluations en cours, pour une formation donnée,
+     * et un utilisateur donné, où l'utilisateur n'a pas encore de copie.
+     *
+     * @return Evaluation[]
      */
-    public function findIncomingEvaluations(Formation $formation, User $user): array
+    public function findOngoingEvaluations(Formation $formation, User $user): array
     {
-        // We fetch all the evaluations for which the user created a StudenCopy
+        // Requête de toutes les évaluations ou l'utilisateur a une copie
         $subQb = $this->createQueryBuilder('e1')
             ->select('e1')
             ->join('e1.studentCopies', 's')
@@ -55,20 +57,25 @@ class EvaluationRepository extends ServiceEntityRepository
 
         $qb = $this->createQueryBuilder('e');
 
-        /**
-         * We then fetch all the evaluations for the current formation,
-         * where evaluation.id is not in the previous query
-         * (meaning we fetch all evaluations with no studentCopy)
+        /*
+         * Nous récupérons ensuite toutes les évaluations pour la formation actuelle,
+         * où l'identifiant de l'évaluation n'est pas dans la requête précédente
+         * (cela signifie que nous récupérons toutes les évaluations sans copie d'étudiant).
          */
         return $qb->leftjoin('e.studentCopies', 'sc')
             ->andWhere('e.formation = :formation')
             ->setParameter('formation', $formation)
             ->andWhere($qb->expr()->notIn('e.id', $subQb->getDQL()))
             ->setParameter('user', $user)
+            ->andWhere('e.endsAt > :date')
+            ->andWhere('e.startsAt < :date')
+            ->setParameter('date', new \DateTimeImmutable())
             ->getQuery()
             ->getResult();
     }
 
+
+    public function findUpcomingEvaluations()
 //    /**
 //     * @return Evaluation[] Returns an array of Evaluation objects
 //     */

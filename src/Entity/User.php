@@ -37,9 +37,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, EntityI
     #[ORM\OneToMany(mappedBy: 'student', targetEntity: StudentCopy::class)]
     private Collection $studentCopies;
 
-    #[ORM\OneToMany(mappedBy: 'professor', targetEntity: StudentCopy::class)]
-    private Collection $professorCopies;
-
     #[ORM\Column(length: 255)]
     #[Groups(['getUser'])]
     private ?string $name = null;
@@ -159,36 +156,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, EntityI
             // set the owning side to null (unless already changed)
             if ($studentCopy->getStudent() === $this) {
                 $studentCopy->setStudent(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, StudentCopy>
-     */
-    public function getProfessorCopies(): Collection
-    {
-        return $this->studentCopies;
-    }
-
-    public function addProfessorCopy(StudentCopy $professorCopy): self
-    {
-        if (!$this->professorCopies->contains($professorCopy)) {
-            $this->professorCopies->add($professorCopy);
-            $professorCopy->setStudent($this);
-        }
-
-        return $this;
-    }
-
-    public function removeProfessorCopy(StudentCopy $professorCopy): self
-    {
-        if ($this->professorCopies->removeElement($professorCopy)) {
-            // set the owning side to null (unless already changed)
-            if ($professorCopy->getStudent() === $this) {
-                $professorCopy->setStudent(null);
             }
         }
 

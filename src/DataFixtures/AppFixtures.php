@@ -13,9 +13,6 @@ class AppFixtures extends Fixture
 {
     /**
      * Loads all the fixtures, and persists them to the database.
-     *
-     * @param ObjectManager $manager
-     * @return void
      */
     public function load(ObjectManager $manager): void
     {
@@ -23,7 +20,7 @@ class AppFixtures extends Fixture
         FormationFactory::createMany(5);
 
         // Creates 20 Users
-        UserFactory::createMany(20, function() {
+        UserFactory::createMany(20, function () {
             return [
                 // Populates the ManyToMany relationship.
                 'formations' => FormationFactory::randomSet(random_int(1, 3)),
@@ -34,8 +31,8 @@ class AppFixtures extends Fixture
         QuizFactory::createMany(12, function () {
             return [
                 'author' => UserFactory::createOne([
-                    'roles' => ["ROLE_FORMATEUR"]
-                ])
+                    'roles' => ['ROLE_FORMATEUR'],
+                ]),
             ];
         });
 
