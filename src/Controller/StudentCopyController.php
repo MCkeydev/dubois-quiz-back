@@ -21,6 +21,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
+use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
@@ -46,19 +47,31 @@ class StudentCopyController extends AbstractApiController
         ApiRequestValidator $apiRequestValidator,
         ValidatorInterface $validator
     ): JsonResponse|Response {
-        // Before any further processing, we must make sure that the user is allowed on the evaluation
         // Fetches all the formations allowed on the evaluation
         $formation = $evaluation->getFormation();
 
-        // Checks if the user is a part of the formation
-        if (!$formation->getUsers()->contains($user)) {
+        /*
+         * Vérifie 3 choses :
+         * - Que l'utilisateur est bien dans une formation visée par l'évaluation
+         * - Que l'utilisateur n'a pas déjà fait l'évaluation
+         * - Et que l'évaluation est en cours
+         *
+         */
+        if (!$formation->getUsers()->contains($user) || null !== $entityManager
+                ->getRepository(StudentCopy::class)
+                ->findOneBy(['student' => $user, 'evaluation' => $evaluation])
+            || (new \DateTimeImmutable() < $evaluation->getStartsAt()
+            || new \DateTimeImmutable() > $evaluation->getEndsAt())) {
             throw new AccessDeniedException();
         }
 
-        // Here me want to create studentCopy, and each of its studentAnswers in one take
-
         // Decodes the json to allow iterating the request content
         $requestArray = json_decode($request->getContent(), true);
+
+        // Verifies que le contenu de la requête est bien un tableau
+        if (null === $requestArray) {
+            throw new \JsonException(new ConstraintViolation('The request must of type array', '', [], null, 'request.format', null));
+        }
 
         // Stores all the evalution's questions
         $questions = $evaluation->getQuiz()->getQuestions();
@@ -79,18 +92,12 @@ class StudentCopyController extends AbstractApiController
             );
         }
 
-        // If the student copy already exists we use it, otherwise we create it
-        $studentCopy = $entityManager
-            ->getRepository(StudentCopy::class)
-            ->findOneBy(['student' => $user, 'evaluation' => $evaluation]);
-
         // If no studentCopy was found, we create one
-        if (null === $studentCopy) {
-            $studentCopy = (new StudentCopy())
-                ->setEvaluation($evaluation)
-                ->setStudent($user);
-            $entityManager->persist($studentCopy);
-        }
+        $studentCopy = (new StudentCopy())
+            ->setEvaluation($evaluation)
+            ->setStudent($user);
+
+        $entityManager->persist($studentCopy);
 
         // TODO : comment this, and throw errors
         // Loops over all the dtos to create corresponding student answers
@@ -109,6 +116,7 @@ class StudentCopyController extends AbstractApiController
             ) {
                 // Gets all the answers of the question
                 $answers = $question->getAnswers();
+
                 // If there is more than one, and one corresponds to the choice in the dto
                 if (
                     $answers->count() > 1 &&

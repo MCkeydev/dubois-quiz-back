@@ -6,6 +6,7 @@ use App\Entity\Evaluation;
 use App\Entity\Formation;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -42,8 +43,8 @@ class EvaluationRepository extends ServiceEntityRepository
     }
 
     /**
-     * Cherche dans la table Evaluation toutes les évaluations en cours, pour une formation donnée,
-     * et un utilisateur donné, où l'utilisateur n'a pas encore de copie.
+     * Cherche dans la table Evaluation toutes les évaluations en cours de l'utilisateur
+     * où l'utilisateur n'a pas encore de copie.
      *
      * @return Evaluation[]
      */
@@ -75,22 +76,36 @@ class EvaluationRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * Recupère en base toutes les évaluations à venir de l'utilisateur.
+     */
+    public function findIncomingEvaluations(User $user)
+    {
+        return $this->createQueryBuilder('e')
+            ->innerJoin('e.formation', 'f')
+            ->innerJoin('f.users', 'u')
+            ->andWhere('u.id = :id')
+            ->andWhere('e.startsAt > :date')
+            ->setParameter('date', new \DateTimeImmutable())
+            ->setParameter('id', $user->getId())
+            ->getQuery()
+            ->getResult();
+    }
 
-//    public function findUpcomingEvaluations()
-//    /**
-//     * @return Evaluation[] Returns an array of Evaluation objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('e')
-//            ->andWhere('e.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('e.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
+    /**
+     * @return Evaluation[] Returns an array of Evaluation objects
+     */
+    public function findByExampleField($value): array
+    {
+        return $this->createQueryBuilder('e')
+            ->andWhere('e.exampleField = :val')
+            ->setParameter('val', $value)
+            ->orderBy('e.id', 'ASC')
+            ->setMaxResults(10)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
 
 //    public function findOneBySomeField($value): ?Evaluation
 //    {
