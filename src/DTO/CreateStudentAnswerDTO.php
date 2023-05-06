@@ -10,12 +10,12 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 class CreateStudentAnswerDTO
 {
     #[NotNull]
-    public ?int $question = null;  // Id of the question entity being answered
+    public ?int $question = null;  // ID of the question entity being answered
 
     #[NotBlank(allowNull: true)]
     public ?string $answer = null; // Answer in text form
 
-    public ?int $choice = null;    // Id of the QCM choice (Answer Entity)
+    public ?int $choice = null;    // ID of the QCM choice (Answer Entity)
 
     #[Callback]
     public function validate(ExecutionContextInterface $context)

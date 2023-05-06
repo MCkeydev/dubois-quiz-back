@@ -7,7 +7,6 @@ use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
 
@@ -19,53 +18,41 @@ class HomeController extends AbstractController
     /**
      * Fetches all necessary data for the user's dashboards.
      *
-     * @param User $user
+     * @param User $user // Utilisateur connecté
      */
     #[Route('/api/home', name: 'app_home')]
     public function home(
         #[CurrentUser] User $user,
-    ): Response {
-        $formations = $user->getFormations();
-
-        return $this->json($formations, context: ['groups' => 'api']);
-    }
-
-    /***
-     * Route qui retourne toutes les évaluations en cours ou à venir de l'utilisateur.
-     *
-     * @param User $user // L'utilisateur connecté
-     * @param EntityManagerInterface $em
-     * @return JsonResponse
-     */
-    #[Route('/api/evaluations/incoming', name: 'app_evaluations_get', methods: ['GET'])]
-    public function getIncomingEvaluations(
-        #[CurrentUser] User $user,
-        EntityManagerInterface $em,
+        EntityManagerInterface $entityManager,
     ): JsonResponse {
-        // Requête en base de donnée de toutes les évaluations en cours de l'utilisateur
-        $evaluations = $em->getRepository(Evaluation::class)->findOngoingEvaluations($user);
-
-        // Si aucune évaluation n'a été trouvée, renvoies une erreur 404
-        if (0 === count($evaluations)) {
-            return $this->json([], Response::HTTP_NOT_FOUND);
+        // Les données retournées varient en fonction du type d'utilisateur
+        if ($this->isGranted('ROLE_ELEVE')) {
+            return $this->studentHome($user, $entityManager);
+        } elseif ($this->isGranted('ROLE_FORMATEUR')) {
+            // TODO: ajouter la fonction teacherHome
         }
 
-        return $this->json($evaluations, context: ['groups' => 'api']);
+        return $this->json($this->createAccessDeniedException());
     }
 
     /**
-     * Fonction vérifiant si tous les éléments d'un tableau sont eux-mêmes des tableaux vides.
-     *
-     * @return bool // True si le tableau est rempli de tableaux vides
+     * Fonction retournant toutes les informations nécessaire sur la page d'accueil d'un utilisateur élève.
      */
-    public function isDeepEmptyArray(array $tableau): bool
-    {
-        foreach ($tableau as $element) {
-            if (!is_array($element) || 0 !== count($element)) {
-                return false;
-            }
-        }
+    public function studentHome(
+        User $user,
+        EntityManagerInterface $entityManager,
+    ): JsonResponse {
+        $responseData = [];
 
-        return true;
+        // Formations de l'utilisateur
+        $responseData['formations'] = $user->getFormations();
+
+        $evaluationRepository = $entityManager->getRepository(Evaluation::class);
+
+        // Evaluations en cours et à venir de l'utilisateur
+        $responseData['onGoing'] = $evaluationRepository->findOngoingEvaluations($user);
+        $responseData['incoming'] = $evaluationRepository->findIncomingEvaluations($user);
+
+        return $this->json($responseData, context: ['groups' => 'api']);
     }
 }
