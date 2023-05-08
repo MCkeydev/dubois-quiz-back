@@ -22,15 +22,15 @@ class StudentAnswer implements EntityInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups('fetchAnswer')]
+    #[Groups(['fetchAnswer', 'api'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups('fetchAnswer')]
+    #[Groups(['fetchAnswer', 'api'])]
     private ?string $annotation = null;
 
     #[ORM\Column(nullable: true)]
-    #[Groups('fetchAnswer')]
+    #[Groups(['fetchAnswer', 'api'])]
     private ?int $score = null;
 
     #[ORM\ManyToOne(inversedBy: 'studentAnswers')]
@@ -39,15 +39,16 @@ class StudentAnswer implements EntityInterface
 
     #[ORM\ManyToOne(inversedBy: 'studentAnswers')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups('fetchAnswer')]
+    #[Groups(['fetchAnswer', 'api'])]
     private ?Question $question = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     #[NotBlank(allowNull: true)]
-    #[Groups('fetchAnswer')]
+    #[Groups(['fetchAnswer', 'api'])]
     private ?string $answer = null;
 
     #[ORM\ManyToOne]
+    #[Groups(['fetchAnswer', 'api'])]
     private ?Answer $choice = null;
 
     #[Callback]

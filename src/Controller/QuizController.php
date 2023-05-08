@@ -24,14 +24,9 @@ class QuizController extends AbstractApiController
         ApiRequestValidator $apiRequestValidator,
         EntityManagerInterface $entityManager,
     ): JsonResponse {
-        $dto = $apiRequestValidator->checkRequestValidity($request, Quiz::class);
-
-        if ($dto instanceof ConstraintViolationList) {
-            return $this->json($dto, Response::HTTP_BAD_REQUEST);
-        }
-
+        $this->denyAccessUnlessGranted('ROLE_FORMATEUR');
+        $dto = $apiRequestValidator->checkRequestValidity($request, Quiz::class, isArray: false);
         $dto->setAuthor($user);
-
         $entityManager->persist($dto);
         $entityManager->flush();
 

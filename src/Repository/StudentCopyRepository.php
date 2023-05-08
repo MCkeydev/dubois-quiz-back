@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\Evaluation;
 use App\Entity\StudentCopy;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -53,6 +54,47 @@ class StudentCopyRepository extends ServiceEntityRepository
             ;
         }
 
+    /**
+     * Fonction qui cherche en base toutes les copies que le professeur doit corriger.
+     *
+     * @return float|int|mixed|string
+     */
+    public function findStudentCopiesToGrade(Evaluation $evaluation)
+    {
+        return $this->createQueryBuilder('student_copy')
+            ->andWhere('student_copy.evaluation = :eval')
+            ->setParameter('eval', $evaluation)
+            ->andWhere('student_copy.commentary IS NULL')
+            ->andWhere('student_copy.score IS NULL')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Fonction qui récupères en base toutes les copies notées et corrigées de l'élève.
+     *
+     * @return float|int|mixed|string
+     */
+    public function findGradedStudentCopies(User $user)
+    {
+        return $this->createQueryBuilder('student_copy')
+            ->andWhere('student_copy.student = :user')
+            ->setParameter('user', $user)
+            ->andWhere('student_copy.commentary IS NOT NULL')
+            ->andWhere('student_copy.score IS NOT NULL')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findSingleGradedCopy(int $id) {
+        return $this->createQueryBuilder('student_copy')
+            ->andWhere('student_copy.id = :id')
+            ->setParameter('id', $id)
+            ->andWhere('student_copy.commentary IS NOT NULL')
+            ->andWhere('student_copy.score IS NOT NULL')
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 //    /**
 //     * @return StudentCopy[] Returns an array of StudentCopy objects
 //     */

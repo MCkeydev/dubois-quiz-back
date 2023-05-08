@@ -29,7 +29,7 @@ class Quiz implements OwnedEntityInterface
     #[ORM\OneToMany(mappedBy: 'quiz', targetEntity: Evaluation::class)]
     private Collection $evaluations;
 
-    #[ORM\OneToMany(mappedBy: 'Quiz', targetEntity: Question::class, orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'Quiz', targetEntity: Question::class, cascade: ['persist'], orphanRemoval: true)]
     #[Groups(['api', 'getEvaluation'])]
     private Collection $questions;
 

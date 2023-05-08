@@ -20,6 +20,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -29,6 +30,71 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  */
 class StudentCopyController extends AbstractApiController
 {
+    #[Route('/api/studentCopy/{id}', methods: 'GET')]
+    public function getSingleEvaluationUngradedCopy(#[CurrentUser] $user, StudentCopy $copy): JsonResponse
+    {
+        $this->denyAccessUnlessGranted('ROLE_FORMATEUR');
+        $this->isAllowedOnRessource($copy, $user);
+
+        return $this->json($copy, context: ['groups' => 'api']);
+    }
+
+    #[Route('/api/evaluation/{id}/copies', methods: 'GET')]
+    public function getEvaluationsUngradedCopies(#[CurrentUser] $user, EntityManagerInterface $entityManager, Evaluation $evaluation)
+    {
+        $this->denyAccessUnlessGranted('ROLE_FORMATEUR');
+
+        $this->isAllowedOnRessource($evaluation, $user);
+
+        $copies = $entityManager->getRepository(StudentCopy::class)->findStudentCopiesToGrade($evaluation);
+
+        if (0 === count($copies)) {
+            $this->createNotFoundException();
+        }
+
+        return $this->json($copies, context: ['groups' => 'api']);
+    }
+
+    /**
+     * Route retournant à l'élève toutes ses copies notées et corrigées.
+     *
+     * @param User $user
+     */
+    #[Route('/api/studentCopies/graded', name: 'app_studentcopies_graded_get', methods: ['GET'])]
+    public function getUsersGradedStudentCopies(
+        #[CurrentUser] User $user,
+        EntityManagerInterface $entityManager,
+    ): JsonResponse {
+        // Il n'est pas nécessaire d'executer ce code si l'user n'est pas un élève
+        $this->denyAccessUnlessGranted('ROLE_ELEVE');
+
+        $studentCopies = $entityManager->getRepository(StudentCopy::class)->findGradedStudentCopies($user);
+
+        if (null === $studentCopies) {
+            return $this->json([]);
+        } else {
+            return $this->json($studentCopies, context: ['groups' => 'api']);
+        }
+    }
+
+    #[Route('/api/studentCopy/{copyID}/graded', name: 'app_studentcopy_getdetailedgradedcopy', methods: ['GET'])]
+    public function getDetailedGradedCopy(#[CurrentUser] User $user, int $copyID, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $copy = $entityManager->getRepository(StudentCopy::class)->findSingleGradedCopy($copyID);
+        if (null === $copy) {
+            $this->createNotFoundException();
+        }
+        if (!$this->isAllowedOnRessource($copy, $user)) {
+            $this->createAccessDeniedException();
+        }
+
+        if (null === $copy) {
+            $this->json([], Response::HTTP_NOT_FOUND);
+        }
+
+        return $this->json($copy, context: ['groups' => 'api']);
+    }
+
     /**
      * Route pour créer la copie, et créer toutes les réponses soumises par l'élève.
      */
@@ -169,50 +235,6 @@ class StudentCopyController extends AbstractApiController
     }
 
     /**
-     * Calculates the average score of an evaluation.
-     *
-     * @param ReadableCollection $gradedCopies // Copies notées
-     *
-     * @return int // La note moyenne de toutes les copies
-     */
-    private function avegareCopyScore(ReadableCollection $gradedCopies): int
-    {
-        $average = 0;
-        /**
-         * @var StudentCopy $value
-         */
-        foreach ($gradedCopies->toArray() as $_ => $value) {
-            $average += $value->getScore();
-        }
-
-        return $average / $gradedCopies->count();
-    }
-
-    /**
-     * Computes the position of each copy, and sets it.
-     *
-     * @param ReadableCollection $gradedCopies Collection of copies with a non-null score
-     */
-    private function computeBillboard(ReadableCollection $gradedCopies): void
-    {
-        // Gets all the copies in array form
-        $copies = $gradedCopies->getValues();
-
-        // Sorts in DESC order
-        usort($copies, function ($a, $b) {
-            return $b->getScore() <=> $a->getScore();
-        });
-
-        // Sets the position as the copy index + 1
-        /*
-         * @var StudentCopy $value
-         */
-        foreach ($copies as $index => $copy) {
-            $copy->setPosition($index + 1);
-        }
-    }
-
-    /**
      * Route pour que les professeurs puissent corriger une copie d'un élève.
      *
      * @param User $user
@@ -329,7 +351,7 @@ class StudentCopyController extends AbstractApiController
      *
      * @param User $user
      *
-     * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
+     * @throws ExceptionInterface
      */
     #[
         Route(
@@ -415,5 +437,49 @@ class StudentCopyController extends AbstractApiController
             ->count();
 
         return $this->json($responseData);
+    }
+
+    /**
+     * Calculates the average score of an evaluation.
+     *
+     * @param ReadableCollection $gradedCopies // Copies notées
+     *
+     * @return int // La note moyenne de toutes les copies
+     */
+    private function avegareCopyScore(ReadableCollection $gradedCopies): int
+    {
+        $average = 0;
+        /**
+         * @var StudentCopy $value
+         */
+        foreach ($gradedCopies->toArray() as $_ => $value) {
+            $average += $value->getScore();
+        }
+
+        return $average / $gradedCopies->count();
+    }
+
+    /**
+     * Computes the position of each copy, and sets it.
+     *
+     * @param ReadableCollection $gradedCopies Collection of copies with a non-null score
+     */
+    private function computeBillboard(ReadableCollection $gradedCopies): void
+    {
+        // Gets all the copies in array form
+        $copies = $gradedCopies->getValues();
+
+        // Sorts in DESC order
+        usort($copies, function ($a, $b) {
+            return $b->getScore() <=> $a->getScore();
+        });
+
+        // Sets the position as the copy index + 1
+        /*
+         * @var StudentCopy $value
+         */
+        foreach ($copies as $index => $copy) {
+            $copy->setPosition($index + 1);
+        }
     }
 }
