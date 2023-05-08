@@ -29,10 +29,17 @@ class HomeController extends AbstractController
         if ($this->isGranted('ROLE_ELEVE')) {
             return $this->studentHome($user, $entityManager);
         } elseif ($this->isGranted('ROLE_FORMATEUR')) {
-            // TODO: ajouter la fonction teacherHome
+            return $this->teacherHome($user, $entityManager);
         }
 
         return $this->json($this->createAccessDeniedException());
+    }
+
+    public function teacherHome(User $user, EntityManagerInterface $entityManager): JsonResponse
+    {
+        // Récupères toutes les évaluations avec des copies à noter
+        $evaluations = $entityManager->getRepository(Evaluation::class)->findEvaluationsToGrade($user);
+        return $this->json($evaluations, 200, [], ['groups' => ['api']]);
     }
 
     /**

@@ -21,7 +21,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, EntityI
     private ?int $id = null;
 
     #[ORM\Column(length: 180, unique: true)]
-    #[Groups(['getEvaluation', 'fetchStudentCopy', 'getUser'])]
+    #[Groups(['getEvaluation', 'fetchStudentCopy', 'getUser', 'api'])]
     private ?string $email = null;
 
     #[ORM\Column]
@@ -38,11 +38,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, EntityI
     private Collection $studentCopies;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['getUser'])]
+    #[Groups(['getUser', 'api'])]
     private ?string $name = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['getUser'])]
+    #[Groups(['getUser', 'api'])]
     private ?string $surname = null;
 
     #[ORM\OneToMany(mappedBy: 'author', targetEntity: Quiz::class)]

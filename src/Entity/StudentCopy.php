@@ -21,6 +21,7 @@ class StudentCopy implements OwnedEntityInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups('api')]
     private ?int $id = null;
 
     #[ORM\Column]
@@ -28,15 +29,16 @@ class StudentCopy implements OwnedEntityInterface
     private ?bool $canShare = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['fetchStudentCopy', 'fetchAnswer', 'fetchStudentCopyPreview'])]
+    #[Groups(['fetchStudentCopy', 'fetchAnswer', 'fetchStudentCopyPreview', 'api'])]
     private ?string $commentary = null;
 
     #[ORM\OneToMany(mappedBy: 'studentCopy', targetEntity: StudentAnswer::class, orphanRemoval: true)]
-    #[Groups('fetchStudentCopy')]
+    #[Groups(['fetchStudentCopy', 'api'])]
     private Collection $studentAnswers;
 
     #[ORM\ManyToOne(inversedBy: 'studentCopies')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['fetchStudentCopy', 'api'])]
     private ?User $student = null;
 
     #[ORM\ManyToOne(inversedBy: 'studentCopies')]
@@ -55,6 +57,7 @@ class StudentCopy implements OwnedEntityInterface
     private ?int $position = null;
 
     #[ORM\Column]
+    #[Groups(['fetchStudentCopy', 'api'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     public function __construct()
@@ -66,7 +69,7 @@ class StudentCopy implements OwnedEntityInterface
 
     public function isOwner(User $user): bool
     {
-        return $this->getStudent() === $user || $this->getProfessor() === $user;
+        return $this->getStudent() === $user || $this->getEvaluation()->getAuthor() === $user;
     }
 
     public function getId(): ?int

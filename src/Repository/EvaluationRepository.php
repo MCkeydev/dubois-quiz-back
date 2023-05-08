@@ -6,7 +6,6 @@ use App\Entity\Evaluation;
 use App\Entity\Formation;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -88,6 +87,17 @@ class EvaluationRepository extends ServiceEntityRepository
             ->andWhere('e.startsAt > :date')
             ->setParameter('date', new \DateTimeImmutable())
             ->setParameter('id', $user->getId())
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findEvaluationsToGrade(User $user): array|null
+    {
+        return $this->createQueryBuilder('e')
+            ->innerJoin('e.studentCopies', 'sc')
+            ->andWhere('e.author = :user')
+            ->setParameter('user', $user)
+            ->andWhere('sc.commentary IS NULL')
             ->getQuery()
             ->getResult();
     }
