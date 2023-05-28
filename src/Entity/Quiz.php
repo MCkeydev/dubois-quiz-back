@@ -13,7 +13,7 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\NotNull;
 
 /**
- * @Entity Entité "Quiz" - Représente un quiz.
+ *  Entité "Quiz" - Représente un quiz.
  */
 #[ORM\Entity(repositoryClass: QuizRepository::class)]
 class Quiz implements OwnedEntityInterface
@@ -45,7 +45,7 @@ class Quiz implements OwnedEntityInterface
     /**
      * @var Collection Liste des questions du quiz.
      */
-    #[ORM\OneToMany(mappedBy: 'Quiz', targetEntity: Question::class, cascade: ['persist'], orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'quiz', targetEntity: Question::class, cascade: ['persist'], orphanRemoval: true)]
     #[Groups(['api', 'getEvaluation'])]
     #[NotBlank]
     #[Count(min: 1, minMessage: 'Au moins une question doit être fournie.')]

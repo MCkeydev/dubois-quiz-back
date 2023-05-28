@@ -12,7 +12,7 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 /**
- * @Entity Entité "StudentAnswer" - Représente une réponse de l'étudiant.
+ *  Entité "StudentAnswer" - Représente une réponse de l'étudiant.
  */
 #[ORM\Entity(repositoryClass: StudentAnswerRepository::class)]
 #[UniqueEntity(

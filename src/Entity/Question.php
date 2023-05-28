@@ -10,7 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
- * @Entity Entité "Question" - Représente une question.
+ *  Entité "Question" - Représente une question.
  */
 #[ORM\Entity(repositoryClass: QuestionRepository::class)]
 class Question implements OwnedEntityInterface

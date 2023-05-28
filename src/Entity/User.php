@@ -12,7 +12,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
- * @Entity Entité "User" - Représente les utilisateurs de l'application.
+ *  Entité "User" - Représente les utilisateurs de l'application.
  */
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 class User implements UserInterface, PasswordAuthenticatedUserInterface, EntityInterface

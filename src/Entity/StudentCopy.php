@@ -11,7 +11,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
- * @Entity Entité "StudentCopy" - Représente une copie de l'étudiant.
+ *  Entité "StudentCopy" - Représente une copie de l'étudiant.
  */
 #[ORM\Entity(repositoryClass: StudentCopyRepository::class)]
 #[UniqueEntity(

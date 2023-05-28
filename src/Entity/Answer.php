@@ -10,7 +10,8 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\NotNull;
 
 /**
- * @Entity Entité "Answer" - Représente une réponse.
+ * Entité "Answer" - Représente une réponse.
+ *
  */
 #[ORM\Entity(repositoryClass: AnswerRepository::class)]
 class Answer implements EntityInterface

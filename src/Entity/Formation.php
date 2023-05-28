@@ -12,7 +12,7 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\NotNull;
 
 /**
- * @Entity Entité "Formation" - Représente une formation.
+ *  Entité "Formation" - Représente une formation.
  */
 #[ORM\Entity(repositoryClass: FormationRepository::class)]
 class Formation implements EntityInterface

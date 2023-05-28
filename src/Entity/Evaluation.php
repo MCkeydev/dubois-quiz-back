@@ -15,7 +15,7 @@ use Symfony\Component\Validator\Constraints\Type;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 /**
- * @Entity Entité "Evaluation" - Représente une évaluation.
+ *  Entité "Evaluation" - Représente une évaluation.
  */
 #[ORM\Entity(repositoryClass: EvaluationRepository::class)]
 class Evaluation implements OwnedEntityInterface

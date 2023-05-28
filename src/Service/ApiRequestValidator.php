@@ -11,17 +11,45 @@ use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\ConstraintViolationList;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
+/**
+ * Classe ApiRequestValidator
+ *
+ * Cette classe est responsable de la validation des requêtes API.
+ */
 class ApiRequestValidator
 {
+    /**
+     * @var SerializerInterface Interface de sérialisation/désérialisation des objets
+     */
     public SerializerInterface $serializer;
+
+    /**
+     * @var ValidatorInterface Interface de validation des objets
+     */
     public ValidatorInterface $validator;
 
+    /**
+     * Constructeur de la classe ApiRequestValidator
+     *
+     * @param SerializerInterface $serializer Interface de sérialisation/désérialisation des objets
+     * @param ValidatorInterface $validator Interface de validation des objets
+     */
     public function __construct(SerializerInterface $serializer, ValidatorInterface $validator)
     {
         $this->serializer = $serializer;
         $this->validator = $validator;
     }
 
+    /**
+     * Vérifie la validité d'une requête
+     *
+     * @param Request|string $request La requête à valider
+     * @param string $type Le type d'objet dans lequel désérialiser la requête
+     * @param string $format Le format de la requête (par défaut : 'json')
+     * @param bool $isArray Indique si l'objet désérialisé est un tableau (par défaut : true)
+     * @return mixed L'objet désérialisé si la validation réussit
+     * @throws JsonException Si des erreurs de validation sont détectées
+     */
     public function checkRequestValidity(Request|string $request, string $type, string $format = 'json', $isArray = true): mixed
     {
         try {
@@ -33,11 +61,9 @@ class ApiRequestValidator
 
             if (count($errors) > 0) {
                 /*
-                 * Uses a __toString method on the $errors variable which is a
-                 * ConstraintViolationList object. This gives us a nice string
-                 * for debugging.
+                 * Utilise une méthode __toString sur la variable $errors qui est un objet ConstraintViolationList.
+                 * Cela nous donne une belle chaîne de caractères pour le débogage.
                  */
-
                 throw new JsonException($errors);
             }
 
@@ -46,8 +72,9 @@ class ApiRequestValidator
             $violations = new ConstraintViolationList();
 
             foreach ($e->getErrors() as $exception) {
-                $message = sprintf('The type must be one of "%s" ("%s" given).', implode(', ', $exception->getExpectedTypes()), $exception->getCurrentType());
+                $message = sprintf('Le type doit être l\'un des suivants : "%s" ("%s" donné).', implode(', ', $exception->getExpectedTypes()), $exception->getCurrentType());
                 $parameters = [];
+
                 if ($exception->canUseMessageForUser()) {
                     $parameters['hint'] = $exception->getMessage();
                 }
@@ -59,3 +86,4 @@ class ApiRequestValidator
         }
     }
 }
+
