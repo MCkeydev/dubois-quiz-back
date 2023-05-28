@@ -11,6 +11,11 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 
+/**
+ * Classe abstraite mettant à disposition des méthodes nécessaires dans la majorité des contrôleurs de l'application.
+ * Tous les contrôleurs devront étendre cette classe.
+ *
+ */
 abstract class AbstractApiController extends AbstractController
 {
     private readonly PropertyAccessorInterface $propertyAccessor;

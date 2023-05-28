@@ -20,18 +20,24 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
-use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
- * Class controlleur de gestion de copies élève (création, correction).
+ * Contrôleur pour la gestion des copies d'élèves (création, correction).
  */
 class StudentCopyController extends AbstractApiController
 {
+    /**
+     * Permet à un professeur de récupérer une copie d'une évaluation dont il est l'auteur.
+     *
+     * @param User $user L'utilisateur formateur connecté.
+     * @param StudentCopy $copy La copie de l'élève.
+     * @return JsonResponse La réponse JSON contenant la copie de l'élève.
+     */
     #[Route('/api/studentCopy/{id}', methods: 'GET')]
-    public function getSingleEvaluationUngradedCopy(#[CurrentUser] $user, StudentCopy $copy): JsonResponse
+    public function getSingleCopy(#[CurrentUser] User $user, StudentCopy $copy): JsonResponse
     {
         $this->denyAccessUnlessGranted('ROLE_FORMATEUR');
         $this->isAllowedOnRessource($copy, $user);
@@ -39,8 +45,16 @@ class StudentCopyController extends AbstractApiController
         return $this->json($copy, context: ['groups' => 'api']);
     }
 
+    /**
+     * Récupère les copies non notées d'une évaluation.
+     *
+     * @param User $user L'utilisateur formateur connecté.
+     * @param EntityManagerInterface $entityManager L'instance de l'EntityManager.
+     * @param Evaluation $evaluation L'évaluation.
+     * @return JsonResponse La réponse JSON contenant les copies non notées.
+     */
     #[Route('/api/evaluation/{id}/copies', methods: 'GET')]
-    public function getEvaluationsUngradedCopies(#[CurrentUser] $user, EntityManagerInterface $entityManager, Evaluation $evaluation)
+    public function getEvaluationUngradedCopies(#[CurrentUser] $user, EntityManagerInterface $entityManager, Evaluation $evaluation)
     {
         $this->denyAccessUnlessGranted('ROLE_FORMATEUR');
 
@@ -56,16 +70,18 @@ class StudentCopyController extends AbstractApiController
     }
 
     /**
-     * Route retournant à l'élève toutes ses copies notées et corrigées.
+     * Récupère toutes les copies notées et corrigées d'un élève.
      *
-     * @param User $user
+     * @param User $user L'utilisateur élève connecté.
+     * @param EntityManagerInterface $entityManager L'instance de l'EntityManager.
+     * @return JsonResponse La réponse JSON contenant les copies notées et corrigées de l'élève.
      */
     #[Route('/api/studentCopies/graded', name: 'app_studentcopies_graded_get', methods: ['GET'])]
     public function getUsersGradedStudentCopies(
         #[CurrentUser] User $user,
         EntityManagerInterface $entityManager,
     ): JsonResponse {
-        // Il n'est pas nécessaire d'executer ce code si l'user n'est pas un élève
+        // Il n'est pas nécessaire d'exécuter ce code si l'utilisateur n'est pas un élève
         $this->denyAccessUnlessGranted('ROLE_ELEVE');
 
         $studentCopies = $entityManager->getRepository(StudentCopy::class)->findGradedStudentCopies($user);
@@ -73,10 +89,18 @@ class StudentCopyController extends AbstractApiController
         if (null === $studentCopies) {
             return $this->json([]);
         } else {
-            return $this->json($studentCopies, context: ['groups' => 'api']);
+            return $this->json($studentCopies, context: ['groups' => 'studentCopy']);
         }
     }
 
+    /**
+     * Récupère une copie notée et corrigée détaillée d'un élève.
+     *
+     * @param User $user L'utilisateur connecté.
+     * @param int $copyID L'ID de la copie.
+     * @param EntityManagerInterface $entityManager L'instance de l'EntityManager.
+     * @return JsonResponse La réponse JSON contenant la copie notée et corrigée détaillée de l'élève.
+     */
     #[Route('/api/studentCopy/{copyID}/graded', name: 'app_studentcopy_getdetailedgradedcopy', methods: ['GET'])]
     public function getDetailedGradedCopy(#[CurrentUser] User $user, int $copyID, EntityManagerInterface $entityManager): JsonResponse
     {
@@ -92,19 +116,21 @@ class StudentCopyController extends AbstractApiController
             $this->json([], Response::HTTP_NOT_FOUND);
         }
 
-        return $this->json($copy, context: ['groups' => 'api']);
+        return $this->json($copy, context: ['groups' => 'studentCopy']);
     }
 
     /**
-     * Route pour créer la copie, et créer toutes les réponses soumises par l'élève.
+     * Soumet une copie d'élève pour une évaluation.
+     *
+     * @param User $user L'utilisateur élève connecté.
+     * @param Request $request L'objet Request contenant les données de la requête.
+     * @param Evaluation $evaluation L'évaluation.
+     * @param EntityManagerInterface $entityManager L'instance de l'EntityManager.
+     * @param ApiRequestValidator $apiRequestValidator Le service de validation des requêtes API.
+     * @param ValidatorInterface $validator L'instance du Validator.
+     * @return JsonResponse|Response La réponse JSON indiquant la soumission réussie de la copie.
      */
-    #[
-        Route(
-            '/api/evaluation/{id}/studentCopy/submit',
-            name: 'app_student_copy_submit',
-            methods: ['POST']
-        )
-    ]
+    #[Route('/api/evaluation/{id}/studentCopy/submit', name: 'app_student_copy_submit', methods: ['POST'])]
     public function submitStudentCopy(
         #[CurrentUser] User $user,
         Request $request,
@@ -113,7 +139,7 @@ class StudentCopyController extends AbstractApiController
         ApiRequestValidator $apiRequestValidator,
         ValidatorInterface $validator
     ): JsonResponse|Response {
-        // Fetches all the formations allowed on the evaluation
+        // Récupère toutes les formations autorisées pour l'évaluation
         $formation = $evaluation->getFormation();
 
         /*
@@ -126,31 +152,31 @@ class StudentCopyController extends AbstractApiController
         if (!$formation->getUsers()->contains($user) || null !== $entityManager
                 ->getRepository(StudentCopy::class)
                 ->findOneBy(['student' => $user, 'evaluation' => $evaluation])
-            || (new \DateTimeImmutable() < $evaluation->getStartsAt()
-            || new \DateTimeImmutable() > $evaluation->getEndsAt())) {
+            || (new \DateTimeImmutable() <= $evaluation->getStartsAt()
+                || new \DateTimeImmutable() >= $evaluation->getEndsAt())) {
             throw new AccessDeniedException();
         }
 
-        // Decodes the json to allow iterating the request content
+        // Décode le JSON pour pouvoir itérer sur le contenu de la requête
         $requestArray = json_decode($request->getContent(), true);
 
-        // Verifies que le contenu de la requête est bien un tableau
+        // Vérifie que le contenu de la requête est bien un tableau
         if (null === $requestArray) {
             throw new \JsonException(new ConstraintViolation('The request must of type array', '', [], null, 'request.format', null));
         }
 
-        // Stores all the evalution's questions
+        // Stocke toutes les questions de l'évaluation
         $questions = $evaluation->getQuiz()->getQuestions();
 
         $dtoArray = [];
 
         /*
-         * Validates each of the request's array elements to match the DTO
-         * Now that we have an array of DTO's, we want to make sure that the question is in fact,
-         * related to the evaluation.
+         * Valide chaque élément du tableau de la requête pour correspondre au DTO
+         * Maintenant que nous avons un tableau de DTO, nous voulons nous assurer que la question est en fait
+         * liée à l'évaluation.
          */
         foreach ($requestArray as $_ => $value) {
-            // Checks the type and structure of request and instantiates a dto
+            // Vérifie le type et la structure de la requête et instancie un DTO
             $dtoArray[] = $apiRequestValidator->checkRequestValidity(
                 json_encode($value),
                 CreateStudentAnswerDTO::class,
@@ -158,20 +184,22 @@ class StudentCopyController extends AbstractApiController
             );
         }
 
-        // If no studentCopy was found, we create one
+        // Si aucune StudentCopy n'a été trouvée, nous en créons une
         $studentCopy = (new StudentCopy())
             ->setEvaluation($evaluation)
             ->setStudent($user);
 
         $entityManager->persist($studentCopy);
 
-        // TODO : comment this, and throw errors
-        // Loops over all the dtos to create corresponding student answers
+        $studentAnswer = null;
+
+        // TODO : commenter ceci et lancer des erreurs
+        // Parcourt tous les DTO pour créer les réponses d'élève correspondantes
         /**
          * @var CreateStudentAnswerDTO $dto
          */
         foreach ($dtoArray as $_ => $dto) {
-            // If the request's question is present in the evaluation's question, we can continue
+            // Si la question de la requête est présente dans les questions de l'évaluation, nous pouvons continuer
             if (
                 $question = $questions->findFirst(function (
                     int $key,
@@ -180,12 +208,12 @@ class StudentCopyController extends AbstractApiController
                     return $value->getId() === $dto->question;
                 })
             ) {
-                // Gets all the answers of the question
+                // Récupère toutes les réponses de la question
                 $answers = $question->getAnswers();
 
-                // If there is more than one, and one corresponds to the choice in the dto
+                // S'il y en a plus d'une et qu'une correspond au choix dans le DTO
                 if (
-                    $answers->count() > 1 &&
+                    $answers->count() >= 1 &&
                     $dto->choice &&
                     ($answer = $answers->findFirst(function (
                         int $key,
@@ -198,6 +226,7 @@ class StudentCopyController extends AbstractApiController
                         ->setStudentCopy($studentCopy)
                         ->setQuestion($question)
                         ->setChoice($answer);
+
                 } elseif ($dto->answer) {
                     $studentAnswer = (new StudentAnswer())
                         ->setStudentCopy($studentCopy)
@@ -209,9 +238,9 @@ class StudentCopyController extends AbstractApiController
 
                 if (count($errors) > 0) {
                     /*
-                     * Uses a __toString method on the $errors variable which is a
-                     * ConstraintViolationList object. This gives us a nice string
-                     * for debugging.
+                     * Utilise une méthode __toString() sur la variable $errors qui est un
+                     * objet ConstraintViolationList. Cela nous donne une belle chaîne
+                     * pour le débogage.
                      */
                     $errorsString = (string) $errors;
 
@@ -225,27 +254,28 @@ class StudentCopyController extends AbstractApiController
             }
         }
 
+        $studentCopy->getEvaluation()->incrementCopyCount();
         $studentCopy->setIsLocked(true);
         $entityManager->flush();
 
         return $this->json(
             $studentCopy,
-            context: ['groups' => 'fetchStudentCopy']
+            context: ['groups' => 'studentCopy']
         );
     }
 
     /**
-     * Route pour que les professeurs puissent corriger une copie d'un élève.
+     * Corrige une copie d'élève.
      *
-     * @param User $user
+     * @param Request $request L'objet Request contenant les données de la requête.
+     * @param User $user L'utilisateur connecté.
+     * @param StudentCopy $studentCopy La copie de l'élève à corriger.
+     * @param ValidatorInterface $validator L'instance du Validator.
+     * @param EntityManagerInterface $entityManager L'instance de l'EntityManager.
+     * @param ApiRequestValidator $apiRequestValidator Le service de validation des requêtes API.
+     * @return Response La réponse indiquant que la copie a été corrigée avec succès.
      */
-    #[
-        Route(
-            '/api/evaluation/studentCopy/{id}/grade',
-            name: 'app_student_copy_grade',
-            methods: ['PUT']
-        )
-    ]
+    #[Route('/api/evaluation/studentCopy/{id}/grade', name: 'app_student_copy_grade', methods: ['PUT'])]
     public function gradeStudentCopy(
         Request $request,
         #[CurrentUser] User $user,
@@ -254,7 +284,7 @@ class StudentCopyController extends AbstractApiController
         EntityManagerInterface $entityManager,
         ApiRequestValidator $apiRequestValidator
     ): Response {
-        // Assures que l'utilisateur est bien l'auteur de l'évaluation
+        // Assure que l'utilisateur est bien l'auteur de l'évaluation
         $this->denyAccessUnlessGranted('ROLE_FORMATEUR');
         $this->isAllowedOnRessource($studentCopy->getEvaluation(), $user);
 
@@ -294,9 +324,9 @@ class StudentCopyController extends AbstractApiController
 
                 if (count($errors) > 0) {
                     /*
-                     * Uses a __toString method on the $errors variable which is a
-                     * ConstraintViolationList object. This gives us a nice string
-                     * for debugging.
+                     * Utilise une méthode __toString() sur la variable $errors qui est un
+                     * objet ConstraintViolationList. Cela nous donne une belle chaîne
+                     * pour le débogage.
                      */
                     $errorsString = (string) $errors;
 
@@ -308,7 +338,7 @@ class StudentCopyController extends AbstractApiController
             }
         }
 
-        // Sets the fields on the studentCopy entity
+        // Définit les champs sur l'entité StudentCopy
         $studentCopy->setCommentary($dto->commentary);
 
         $studentCopy->setScore(
@@ -325,18 +355,18 @@ class StudentCopyController extends AbstractApiController
 
         $evaluation = $studentCopy->getEvaluation();
 
-        // Filters only the graded copies
+        // Filtre uniquement les copies notées
         $gradedCopies = $evaluation
             ->getStudentCopies()
             ->filter(function (StudentCopy $copy) {
                 return null !== $copy->getScore();
             });
 
-        // Sets the Evaluation's average score
+        // Définit la note moyenne de l'évaluation
         $evaluation->setAverageScore($this->avegareCopyScore($gradedCopies));
         $this->computeBillboard($gradedCopies);
 
-        // Flushes changes to database
+        // Enregistre les modifications dans la base de données
         $entityManager->flush();
 
         return $this->json(
@@ -346,41 +376,16 @@ class StudentCopyController extends AbstractApiController
     }
 
     /**
-     * Entry point to get the preview of a studentCopy
-     * (placement, grade, class average score, formation, quizz).
+     * Récupère un aperçu de la dernière copie corrigée d'un élève.
      *
-     * @param User $user
-     *
-     * @throws ExceptionInterface
+     * @param User $user L'utilisateur connecté.
+     * @param EntityManagerInterface $entityManager L'instance de l'EntityManager.
+     * @param NormalizerInterface $normalizer L'instance du normalizer.
+     * @return JsonResponse La réponse JSON contenant l'aperçu de la dernière copie corrigée de l'élève.
      */
     #[
         Route(
-            '/api/evaluation/{id}/studentCopy/preview',
-            name: 'app_student_copy_get',
-            methods: ['GET']
-        )
-    ]
-    public function getStudentCopyPreview(
-        int $id,
-        #[CurrentUser] User $user,
-        EntityManagerInterface $entityManager,
-        NormalizerInterface $normalizer
-    ): JsonResponse|Response {
-        $studentCopy = $entityManager
-            ->getRepository(StudentCopy::class)
-            ->findOneBy(['student' => $user->getId(), 'evaluation' => $id]);
-
-        if (null === $studentCopy) {
-            return new Response('Entity not found', Response::HTTP_NOT_FOUND);
-        }
-
-        // Creates an associative array with all the requested data
-        return $this->createsStudentCopyPreview($normalizer, $studentCopy);
-    }
-
-    #[
-        Route(
-            '/api/evaluation/studentCopy/preview/last',
+            '/api/studentCopy/preview/last',
             name: 'app_student_last_copy_preview',
             methods: ['GET']
         )
@@ -395,7 +400,7 @@ class StudentCopyController extends AbstractApiController
             ->findLastGradedCopy($user);
 
         if (null !== $studentCopy) {
-            // Creates an associative array with all the requested data
+            // Crée un tableau associatif avec toutes les données demandées
             return $this->createsStudentCopyPreview($normalizer, $studentCopy);
         }
 
@@ -403,7 +408,11 @@ class StudentCopyController extends AbstractApiController
     }
 
     /**
-     * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
+     * Crée l'aperçu d'une copie d'élève.
+     *
+     * @param NormalizerInterface $normalizer L'instance du normalizer.
+     * @param StudentCopy|null $studentCopy La copie d'élève.
+     * @return JsonResponse La réponse JSON contenant l'aperçu de la copie d'élève.
      */
     private function createsStudentCopyPreview(
         NormalizerInterface $normalizer,
@@ -412,7 +421,7 @@ class StudentCopyController extends AbstractApiController
         $responseData = [
             'studentCopy' => $normalizer->normalize(
                 $studentCopy,
-                context: ['groups' => 'fetchStudentCopyPreview']
+                context: ['groups' => 'studentCopy']
             ),
         ];
 
@@ -426,25 +435,15 @@ class StudentCopyController extends AbstractApiController
             $evaluation,
             context: ['groups' => 'api']
         );
-        $responseData['evaluation']['maxScore'] = $evaluation
-            ->getQuiz()
-            ->getQuestions()
-            ->reduce(function (int $accumulator, Question $question): int {
-                return $accumulator + $question->getMaxScore();
-            }, 0);
-        $responseData['evaluation']['copyCount'] = $evaluation
-            ->getStudentCopies()
-            ->count();
 
         return $this->json($responseData);
     }
 
     /**
-     * Calculates the average score of an evaluation.
+     * Calcule la note moyenne d'une évaluation.
      *
-     * @param ReadableCollection $gradedCopies // Copies notées
-     *
-     * @return int // La note moyenne de toutes les copies
+     * @param ReadableCollection $gradedCopies Les copies notées.
+     * @return int La note moyenne de toutes les copies.
      */
     private function avegareCopyScore(ReadableCollection $gradedCopies): int
     {
@@ -460,21 +459,21 @@ class StudentCopyController extends AbstractApiController
     }
 
     /**
-     * Computes the position of each copy, and sets it.
+     * Calcule la position de chaque copie et l'attribue.
      *
-     * @param ReadableCollection $gradedCopies Collection of copies with a non-null score
+     * @param ReadableCollection $gradedCopies La collection de copies avec une note non nulle.
      */
     private function computeBillboard(ReadableCollection $gradedCopies): void
     {
-        // Gets all the copies in array form
+        // Récupère toutes les copies sous forme de tableau
         $copies = $gradedCopies->getValues();
 
-        // Sorts in DESC order
+        // Trie par ordre décroissant
         usort($copies, function ($a, $b) {
             return $b->getScore() <=> $a->getScore();
         });
 
-        // Sets the position as the copy index + 1
+        // Attribue la position en tant qu'index de la copie + 1
         /*
          * @var StudentCopy $value
          */

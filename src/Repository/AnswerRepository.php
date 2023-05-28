@@ -16,11 +16,22 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class AnswerRepository extends ServiceEntityRepository
 {
+    /**
+     * Constructeur de la classe AnswerRepository.
+     *
+     * @param ManagerRegistry $registry Le registre du gestionnaire d'entités.
+     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Answer::class);
     }
 
+    /**
+     * Enregistre une entité Answer dans la base de données.
+     *
+     * @param Answer $entity L'entité Answer à enregistrer.
+     * @param bool $flush (optionnel) Indique s'il faut effectuer un flush après l'enregistrement. Par défaut, false.
+     */
     public function save(Answer $entity, bool $flush = false): void
     {
         $this->getEntityManager()->persist($entity);
@@ -30,6 +41,12 @@ class AnswerRepository extends ServiceEntityRepository
         }
     }
 
+    /**
+     * Supprime une entité Answer de la base de données.
+     *
+     * @param Answer $entity L'entité Answer à supprimer.
+     * @param bool $flush (optionnel) Indique s'il faut effectuer un flush après la suppression. Par défaut, false.
+     */
     public function remove(Answer $entity, bool $flush = false): void
     {
         $this->getEntityManager()->remove($entity);

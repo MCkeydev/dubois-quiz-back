@@ -2,48 +2,51 @@
 
 namespace App\DataFixtures;
 
-use App\Factory\EvaluationFactory;
 use App\Factory\FormationFactory;
-use App\Factory\QuizFactory;
 use App\Factory\UserFactory;
-use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 
-class AppFixtures extends Fixture
+/**
+ * Classe permettant de générer un jeu de données minimal,
+ * afin de tester et utiliser le logiciel.
+ */
+class AppFixtures extends \Doctrine\Bundle\FixturesBundle\Fixture implements \Doctrine\Bundle\FixturesBundle\FixtureGroupInterface
 {
     /**
-     * Loads all the fixtures, and persists them to the database.
+     * Permet de spécifier à doctrine quel groupe de fixtures à exécuter.
+     *
+     * @return string[]
      */
-    public function load(ObjectManager $manager): void
+    public static function getGroups(): array
     {
-        // Creates 5 Formation entity
-        FormationFactory::createMany(5);
+        return ['test'];
+    }
 
-        // Creates 20 Users
-        UserFactory::createMany(20, function () {
+    /**
+     * Crée des données dans toutes les tables, et les persiste en base de données.
+     */
+    public function load(ObjectManager $manager)
+    {
+        // Crée deux formations
+        FormationFactory::createMany(2);
+
+        // Crée 2 formateurs
+        UserFactory::createMany(2, function () {
             return [
-                // Populates the ManyToMany relationship.
-                'formations' => FormationFactory::randomSet(random_int(1, 3)),
+                'roles' => ['ROLE_FORMATEUR'],
+                'formations' => FormationFactory::randomSet(1),
             ];
         });
 
-        // Creates Quiz Entities
-        QuizFactory::createMany(12, function () {
+        // Crée 4 élèves
+        UserFactory::createMany(4, function () {
             return [
-                'author' => UserFactory::createOne([
-                    'roles' => ['ROLE_FORMATEUR'],
-                ]),
+                'roles' => ['ROLE_ELEVE'],
+                'formations' => FormationFactory::randomSet(1),
             ];
         });
 
-        // Creates Evaluation Entities, and populates its ManyToMany relationships
-        EvaluationFactory::createMany(12, function () {
-            return [
-                'quiz' => QuizFactory::random(),
-                'formation' => FormationFactory::random(),
-            ];
-        });
-
+        // Envoie en base les données crées
         $manager->flush();
     }
 }

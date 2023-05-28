@@ -21,6 +21,14 @@ class QuizRepository extends ServiceEntityRepository
         parent::__construct($registry, Quiz::class);
     }
 
+    /**
+     * Enregistre l'entité Quiz.
+     *
+     * @param Quiz $entity L'entité Quiz à enregistrer.
+     * @param bool $flush Indique s'il faut effectuer une opération de flush après l'enregistrement.
+     *
+     * @return void
+     */
     public function save(Quiz $entity, bool $flush = false): void
     {
         $this->getEntityManager()->persist($entity);
@@ -30,6 +38,14 @@ class QuizRepository extends ServiceEntityRepository
         }
     }
 
+    /**
+     * Supprime l'entité Quiz.
+     *
+     * @param Quiz $entity L'entité Quiz à supprimer.
+     * @param bool $flush Indique s'il faut effectuer une opération de flush après la suppression.
+     *
+     * @return void
+     */
     public function remove(Quiz $entity, bool $flush = false): void
     {
         $this->getEntityManager()->remove($entity);

@@ -13,10 +13,44 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\Serializer\SerializerInterface;
-use Symfony\Component\Validator\ConstraintViolationList;
 
+/**
+ * Contrôleur pour la gestion des quiz.
+ */
 class QuizController extends AbstractApiController
 {
+    /**
+     * Récupère tous les quiz d'un professeur.
+     *
+     * @param User $user L'utilisateur formateur connecté.
+     * @param EntityManagerInterface $entityManager L'instance de l'EntityManager.
+     * @return JsonResponse La réponse JSON contenant les quiz du formateur.
+     */
+    #[Route('api/quizzes', methods: ['GET'])]
+    public function getQuizzes(
+        #[CurrentUser] User $user,
+        EntityManagerInterface $entityManager,
+    ): JsonResponse {
+        $this->denyAccessUnlessGranted('ROLE_FORMATEUR');
+
+        $quizzes = $entityManager->getRepository(Quiz::class)->findBy(['author' => $user]);
+
+        if (0 === count($quizzes)) {
+            $this->createNotFoundException();
+        }
+
+        return $this->json($quizzes, context: ['groups' => 'api']);
+    }
+
+    /**
+     * Crée un nouveau quiz.
+     *
+     * @param User $user L'utilisateur formateur connecté.
+     * @param Request $request L'objet Request contenant les données de la requête.
+     * @param ApiRequestValidator $apiRequestValidator Le service de validation des requêtes API.
+     * @param EntityManagerInterface $entityManager L'instance de l'EntityManager.
+     * @return JsonResponse La réponse JSON indiquant la création réussie du quiz.
+     */
     #[Route('/api/quiz', name: 'app_quiz', methods: ['POST'])]
     public function createQuiz(
         #[CurrentUser] User $user,
@@ -25,7 +59,18 @@ class QuizController extends AbstractApiController
         EntityManagerInterface $entityManager,
     ): JsonResponse {
         $this->denyAccessUnlessGranted('ROLE_FORMATEUR');
+        /**
+         * @var Quiz $dto
+         */
         $dto = $apiRequestValidator->checkRequestValidity($request, Quiz::class, isArray: false);
+
+        // Calcule la note maximale du quiz en faisant la somme des barêmes de chaque question
+        $maxScore = $dto->getQuestions()->reduce(function (int $accumulator, Question $question): int {
+            return $accumulator + $question->getMaxScore();
+        }, 0);
+
+        $dto->setMaxScore($maxScore);
+
         $dto->setAuthor($user);
         $entityManager->persist($dto);
         $entityManager->flush();
@@ -33,6 +78,17 @@ class QuizController extends AbstractApiController
         return new JsonResponse(['message' => 'Quiz was succesfully created.', 'id' => $dto->getId()], Response::HTTP_CREATED);
     }
 
+    /**
+     * Met à jour un quiz existant.
+     *
+     * @param User $user L'utilisateur connecté.
+     * @param Quiz $quiz Le quiz à mettre à jour.
+     * @param Request $request L'objet Request contenant les données de la requête.
+     * @param SerializerInterface $serializer L'instance du Serializer.
+     * @param ApiRequestValidator $apiRequestValidator Le service de validation des requêtes API.
+     * @param EntityManagerInterface $entityManager L'instance de l'EntityManager.
+     * @return JsonResponse La réponse JSON indiquant la mise à jour réussie du quiz.
+     */
     #[Route('/api/quiz/{id}', name: 'app_quiz_update', methods: ['PATCH'])]
     public function updateQuiz(
         #[CurrentUser] User $user,
@@ -42,33 +98,41 @@ class QuizController extends AbstractApiController
         ApiRequestValidator $apiRequestValidator,
         EntityManagerInterface $entityManager,
     ): JsonResponse {
-        // Checks if the user is the owner of the quizz
+        // Vérifie si l'utilisateur est le propriétaire du quiz
         $this->isAllowedOnRessource($quiz, $user);
 
         $apiRequestValidator->checkRequestValidity($request, Question::class);
 
-        // If the user is allowed, we need to validate the request
+        // Si l'utilisateur est autorisé, nous devons valider la requête
         $requestContent = json_decode($request->getContent(), true);
 
         /*
-         * For each entry in the request body, check if such property exist in object,
-         * and if it does, replace its content.
+         * Pour chaque entrée dans le corps de la requête, vérifie si cette propriété existe dans l'objet,
+         * et si oui, remplace son contenu.
          */
         $this->deepSetProperties($requestContent, $quiz);
 
-        // Since validation was made in checkRequestValidity, we can persist without revalidating
+        // Puisque la validation a été effectuée dans checkRequestValidity, nous pouvons persister sans réexécuter la validation
         $entityManager->flush();
 
         return new JsonResponse($serializer->serialize($quiz, 'json', context: ['groups' => 'api']), Response::HTTP_OK);
     }
 
+    /**
+     * Supprime un quiz.
+     *
+     * @param User $user L'utilisateur connecté.
+     * @param Quiz $quiz Le quiz à supprimer.
+     * @param EntityManagerInterface $entityManager L'instance de l'EntityManager.
+     * @return JsonResponse La réponse JSON indiquant la suppression réussie du quiz.
+     */
     #[Route('/api/quiz/{id}', name: 'app_quiz_deletequiz', methods: ['DELETE'])]
     public function deleteQuiz(
         #[CurrentUser] User $user,
         Quiz $quiz,
         EntityManagerInterface $entityManager,
     ): JsonResponse {
-        // Checks if the user is the owner of the quizz
+        // Vérifie si l'utilisateur est le propriétaire du quiz
         $this->isAllowedOnRessource($quiz, $user);
 
         $entityManager->remove($quiz);

@@ -11,14 +11,16 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
 
 /**
- * Controller managing homepages for all kinds of users.
+ * Contrôleur pour la gestion des pages d'accueil pour différents types d'utilisateurs.
  */
 class HomeController extends AbstractController
 {
     /**
-     * Fetches all necessary data for the user's dashboards.
+     * Récupère toutes les données nécessaires pour le tableau de bord de l'utilisateur.
      *
-     * @param User $user // Utilisateur connecté
+     * @param User $user L'utilisateur connecté.
+     * @param EntityManagerInterface $entityManager L'instance de l'EntityManager.
+     * @return JsonResponse La réponse JSON contenant les données du tableau de bord.
      */
     #[Route('/api/home', name: 'app_home')]
     public function home(
@@ -35,15 +37,26 @@ class HomeController extends AbstractController
         return $this->json($this->createAccessDeniedException());
     }
 
+    /**
+     * Affiche les informations nécessaires pour la page d'accueil d'un utilisateur formateur.
+     *
+     * @param User $user L'utilisateur formateur connecté.
+     * @param EntityManagerInterface $entityManager L'instance de l'EntityManager.
+     * @return JsonResponse La réponse JSON contenant les évaluations à noter.
+     */
     public function teacherHome(User $user, EntityManagerInterface $entityManager): JsonResponse
     {
         // Récupères toutes les évaluations avec des copies à noter
         $evaluations = $entityManager->getRepository(Evaluation::class)->findEvaluationsToGrade($user);
-        return $this->json($evaluations, 200, [], ['groups' => ['api']]);
+        return $this->json($evaluations, context: ['groups' => 'api']);
     }
 
     /**
-     * Fonction retournant toutes les informations nécessaire sur la page d'accueil d'un utilisateur élève.
+     * Affiche les informations nécessaires pour la page d'accueil d'un utilisateur élève.
+     *
+     * @param User $user L'utilisateur élève connecté.
+     * @param EntityManagerInterface $entityManager L'instance de l'EntityManager.
+     * @return JsonResponse La réponse JSON contenant les informations pour la page d'accueil de l'élève.
      */
     public function studentHome(
         User $user,

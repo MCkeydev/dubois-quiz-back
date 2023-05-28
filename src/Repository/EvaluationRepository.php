@@ -23,6 +23,12 @@ class EvaluationRepository extends ServiceEntityRepository
         parent::__construct($registry, Evaluation::class);
     }
 
+    /**
+     * Enregistre une entité Evaluation dans la base de données.
+     *
+     * @param Evaluation $entity L'entité Evaluation à enregistrer.
+     * @param bool $flush (optionnel) Indique s'il faut effectuer un flush après l'enregistrement. Par défaut, false.
+     */
     public function save(Evaluation $entity, bool $flush = false): void
     {
         $this->getEntityManager()->persist($entity);
@@ -32,6 +38,12 @@ class EvaluationRepository extends ServiceEntityRepository
         }
     }
 
+    /**
+     * Supprime une entité Evaluation de la base de données.
+     *
+     * @param Evaluation $entity L'entité Evaluation à supprimer.
+     * @param bool $flush (optionnel) Indique s'il faut effectuer un flush après la suppression. Par défaut, false.
+     */
     public function remove(Evaluation $entity, bool $flush = false): void
     {
         $this->getEntityManager()->remove($entity);
@@ -43,7 +55,7 @@ class EvaluationRepository extends ServiceEntityRepository
 
     /**
      * Cherche dans la table Evaluation toutes les évaluations en cours de l'utilisateur
-     * où l'utilisateur n'a pas encore de copie.
+     * où l'utilisateur n'a pas encore soumis de copie.
      *
      * @return Evaluation[]
      */
@@ -76,7 +88,10 @@ class EvaluationRepository extends ServiceEntityRepository
     }
 
     /**
-     * Recupère en base toutes les évaluations à venir de l'utilisateur.
+     * Récupère toutes les évaluations à venir de l'utilisateur.
+     *
+     * @param User $user L'utilisateur pour lequel rechercher les évaluations à venir.
+     * @return Evaluation[] Un tableau d'objets Evaluation.
      */
     public function findIncomingEvaluations(User $user)
     {
@@ -91,13 +106,47 @@ class EvaluationRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * Récupère les évaluations du formateur dont la date de fin est passée et pour lesquelles au moins une copie non corrigée existe.
+     *
+     * @param User $user L'utilisateur formateur pour lequel rechercher les évaluations à corriger.
+     * @return array|null Un tableau d'objets Evaluation ou null.
+     */
     public function findEvaluationsToGrade(User $user): array|null
     {
+        $now = new \DateTimeImmutable();
+
         return $this->createQueryBuilder('e')
             ->innerJoin('e.studentCopies', 'sc')
             ->andWhere('e.author = :user')
             ->setParameter('user', $user)
             ->andWhere('sc.commentary IS NULL')
+            ->andWhere('e.endsAt <= :now')
+            ->setParameter('now', $now)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Récupère toutes les évaluations créées par un utilisateur où aucune copie n'existe.
+     *
+     * @param User $user L'utilisateur pour lequel rechercher les évaluations sans copies.
+     * @return Evaluation[] Un tableau d'objets Evaluation.
+     */
+    public function findUserEvaluationsWithoutCopies(User $user): array
+    {
+        // Requête de toutes les évaluations qui ont des copies
+        $subQb = $this->createQueryBuilder('e1')
+            ->select('e1.id')
+            ->join('e1.studentCopies', 's');
+
+        $qb = $this->createQueryBuilder('e');
+
+        // Nous récupérons toutes les évaluations créées par l'utilisateur
+        // où l'ID de l'évaluation n'est pas dans la requête précédente
+        return $qb->where('e.author = :user')
+            ->setParameter('user', $user)
+            ->andWhere($qb->expr()->notIn('e.id', $subQb->getDQL()))
             ->getQuery()
             ->getResult();
     }

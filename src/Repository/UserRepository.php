@@ -24,6 +24,14 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         parent::__construct($registry, User::class);
     }
 
+    /**
+     * Enregistre l'entité User.
+     *
+     * @param User $entity L'entité User à enregistrer.
+     * @param bool $flush Indique s'il faut effectuer une opération de flush après l'enregistrement.
+     *
+     * @return void
+     */
     public function save(User $entity, bool $flush = false): void
     {
         $this->getEntityManager()->persist($entity);
@@ -33,6 +41,14 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         }
     }
 
+    /**
+     * Supprime l'entité User.
+     *
+     * @param User $entity L'entité User à supprimer.
+     * @param bool $flush Indique s'il faut effectuer une opération de flush après la suppression.
+     *
+     * @return void
+     */
     public function remove(User $entity, bool $flush = false): void
     {
         $this->getEntityManager()->remove($entity);
@@ -43,7 +59,14 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     }
 
     /**
-     * Used to upgrade (rehash) the user's password automatically over time.
+     * Utilisé pour mettre à niveau (rehasher) automatiquement le mot de passe de l'utilisateur sur la durée.
+     *
+     * @param PasswordAuthenticatedUserInterface $user                L'utilisateur concerné.
+     * @param string                             $newHashedPassword   Le nouveau mot de passe haché.
+     *
+     * @throws UnsupportedUserException Si l'utilisateur n'est pas une instance de la classe User.
+     *
+     * @return void
      */
     public function upgradePassword(PasswordAuthenticatedUserInterface $user, string $newHashedPassword): void
     {

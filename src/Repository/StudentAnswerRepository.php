@@ -21,15 +21,31 @@ class StudentAnswerRepository extends ServiceEntityRepository
         parent::__construct($registry, StudentAnswer::class);
     }
 
-    public function save(StudentAnswer $entity, bool $flush = false): void
-    {
-        $this->getEntityManager()->persist($entity);
+    /**
+     * Enregistre l'entité StudentAnswer.
+     *
+     * @param StudentAnswer $entity L'entité StudentAnswer à enregistrer.
+     * @param bool $flush Indique s'il faut effectuer une opération de flush après l'enregistrement.
+     *
+     * @return void
+     */
+     public function save(StudentAnswer $entity, bool $flush = false): void
+     {
+         $this->getEntityManager()->persist($entity);
 
-        if ($flush) {
-            $this->getEntityManager()->flush();
-        }
-    }
+         if ($flush) {
+             $this->getEntityManager()->flush();
+         }
+     }
 
+    /**
+     * Supprime l'entité StudentAnswer.
+     *
+     * @param StudentAnswer $entity L'entité StudentAnswer à supprimer.
+     * @param bool $flush Indique s'il faut effectuer une opération de flush après la suppression.
+     *
+     * @return void
+     */
     public function remove(StudentAnswer $entity, bool $flush = false): void
     {
         $this->getEntityManager()->remove($entity);
