@@ -28,6 +28,12 @@ suivant : [Lien vers l'application](https://zesty-alpaca-e3a0bf.netlify.app)
 >     SLAM
 > -   Élève 2 : eleve2@quiz.com / Mot de passe : password / Formation: BTS MUC
 
+## Accéder à la documentation technique du projet
+
+Vous pouvez accéder à la documentation technique de l'application enligne en
+utilisant le lien suivant :
+[Lien vers l'application](https://quiz-doc.netlify.app)
+
 ## Créer un quiz
 
 1. Dans le menu principal, sélectionnez "Créer un quiz".
