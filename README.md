@@ -15,7 +15,7 @@ apprenants.
 ## Accéder à la version en ligne
 
 Vous pouvez accéder à la version en ligne de l'application en utilisant le lien
-suivant : [Lien vers l'application](https://zesty-alpaca-e3a0bf.netlify.app)
+suivant : [Lien vers l'application](quiz-dubois.netlify.app)
 
 > Pour tester la version en ligne, vous pouvez utiliser les utilisateurs de test
 > suivants :
@@ -24,9 +24,10 @@ suivant : [Lien vers l'application](https://zesty-alpaca-e3a0bf.netlify.app)
 >     BTS SIO SLAM
 > -   Formateur 2 : formateur2@quiz.com / Mot de passe : password Formation: BTS
 >     MUC
-> -   Élève 1 : eleve1@quiz.com / Mot de passe : password / Formation: BTS SIO
->     SLAM
-> -   Élève 2 : eleve2@quiz.com / Mot de passe : password / Formation: BTS MUC
+> -   Élève 1 : eleve1@quiz.com / Mot de passe : password / Formation: BTS MUC
+> -   Élève 2 : eleve2@quiz.com / Mot de passe : password / Formation: BTS SIO SLAM
+> -   Élève 3 : eleve3@quiz.com / Mot de passe : password / Formation: BTS SIO SLAM
+> -   Élève 4 : eleve4@quiz.com / Mot de passe : password / Formation: BTS MUC
 
 ## Accéder à la documentation technique du projet
 
